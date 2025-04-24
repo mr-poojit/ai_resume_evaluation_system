@@ -1,0 +1,51 @@
+{
+    "be7e6294ce45b16f4ce7d6749bda0a50": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.318,
+        "experience_bonus": 0.1,
+        "relevance_score": 27.44
+    },
+    "42d99c035f1eb558105ed1143e506244": {
+        "filename": "Poojit's Resume.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit's Resume.pdf",
+        "semantic_score": 0.3546,
+        "experience_bonus": 0.4,
+        "relevance_score": 36.36
+    },
+    "1804e80c7d6e4b7799684d85f8dd04e9": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV (1).docx",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti-CV (1).docx",
+        "semantic_score": 0.3869,
+        "experience_bonus": 0.4,
+        "relevance_score": 38.95
+    },
+    "55424a270d12bd975db83cf387147066": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti-CV.pdf",
+        "semantic_score": 0.3796,
+        "experience_bonus": 0.4,
+        "relevance_score": 38.37
+    },
+    "bd927bf195618b5f6d4c0d00a49f3657": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_CV.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_CV.pdf",
+        "semantic_score": 0.31,
+        "experience_bonus": 0.4,
+        "relevance_score": 32.8
+    },
+    "25470dd270ac47c4b6ab8ae5d2238da8": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.31,
+        "experience_bonus": 0.4,
+        "relevance_score": 32.8
+    },
+    "658e4596385e29fd203c7d672d50282d": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_Resume.pdf",
+        "semantic_score": 0.31,
+        "experience_bonus": 0.4,
+        "relevance_score": 32.8
+    }
+}
