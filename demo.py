@@ -1,10 +1,9 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException, Form
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer, util
 import uvicorn
-import fitz  
-import docx
-from typing import Optional, List
+import fitz 
+import docx 
 import os
 import hashlib
 import json
@@ -18,16 +17,14 @@ app = FastAPI()
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 PROCESSED_CVS_FILE = "processed_cvs.json"
-JOB_EMBEDDINGS_CSV = "job_embeddings.csv"
 
-# Load already processed resumes from JSON
+# Load processed resumes if available
 if os.path.exists(PROCESSED_CVS_FILE):
     with open(PROCESSED_CVS_FILE, "r") as f:
         processed_resumes = json.load(f)
 else:
     processed_resumes = {}
 
-# Synonym mapping
 ROLE_SYNONYMS = {
     "software developer": "software engineer",
     "web developer": "frontend engineer",
@@ -55,9 +52,12 @@ def extract_text_from_docx(file_path: str) -> str:
     doc = docx.Document(file_path)
     return "\n".join([para.text for para in doc.paragraphs])
 
-def get_file_hash(file_path: str) -> str:
+def get_combined_hash(file_path: str, job_description: str) -> str:
+    """Generate a hash combining file content and job description."""
     with open(file_path, "rb") as f:
-        return hashlib.md5(f.read()).hexdigest()
+        file_content = f.read()
+    combined = file_content + job_description.encode('utf-8')
+    return hashlib.md5(combined).hexdigest()
 
 @app.post("/job-embed")
 def get_job_embedding(
@@ -77,17 +77,15 @@ def get_job_embedding(
         "experience": experience,
         "skills": skills,
         "description": description,
-        "embedding": json.dumps(embedding, indent=2)  # Pretty print
+        "embedding": json.dumps(embedding, indent=2)
     }
 
-    file_exists = os.path.exists(JOB_EMBEDDINGS_CSV)
-    with open(JOB_EMBEDDINGS_CSV, mode="a", newline='', encoding='utf-8') as csvfile:
+    file_exists = os.path.exists("job_embeddings.csv")
+    with open("job_embeddings.csv", mode="a", newline='', encoding='utf-8') as csvfile:
         fieldnames = ["timestamp", "job_title", "experience", "skills", "description", "embedding"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
         if not file_exists:
             writer.writeheader()
-
         writer.writerow(row)
 
     return {"embedding": embedding}
@@ -99,6 +97,10 @@ def match_resumes(
     years_experience: str = Form("0")
 ):
     parsed_experience = extract_years(years_experience)
+
+    if not os.path.exists(resume_folder_path):
+        raise HTTPException(status_code=400, detail="Resume folder path does not exist.")
+
     job_emb_tensor = model.encode(job_description, convert_to_tensor=True)
     results = []
 
@@ -107,18 +109,19 @@ def match_resumes(
         if not os.path.isfile(filepath):
             continue
 
-        file_hash = get_file_hash(filepath)
-        if file_hash in processed_resumes:
-            continue
-
-        if filename.endswith(".pdf"):
+        # Extract text
+        if filename.lower().endswith(".pdf"):
             text = extract_text_from_pdf(filepath)
-        elif filename.endswith(".docx"):
+        elif filename.lower().endswith(".docx"):
             text = extract_text_from_docx(filepath)
         else:
             continue
 
+        combined_hash = get_combined_hash(filepath, job_description)
+
+        # Always re-evaluate even if hash exists
         resume_emb = model.encode(text, convert_to_tensor=True)
+
         semantic_score = util.pytorch_cos_sim(resume_emb, job_emb_tensor).item()
         experience_bonus = min(parsed_experience / 10, 1.0)
         relevance_score = (semantic_score * 0.8 + experience_bonus * 0.2) * 100
@@ -132,12 +135,12 @@ def match_resumes(
         }
 
         results.append(score)
-        processed_resumes[file_hash] = score
+        processed_resumes[combined_hash] = score  
 
     with open(PROCESSED_CVS_FILE, "w") as f:
         json.dump(processed_resumes, f, indent=4)
 
     return results
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+if __name__ == "__demo__":
+    uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
