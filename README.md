@@ -1,4 +1,4 @@
-# 🧠 Resume Evaluation System (FastAPI + NLP)
+# 🧠 Resume Evaluation System (FastAPI + NLP + Hugging Face Integration)
 
 This project implements a smart job-candidate matching system using **semantic embeddings**, **resume parsing**, and **natural language processing (NLP)**. It provides RESTful APIs to:
 
@@ -6,6 +6,7 @@ This project implements a smart job-candidate matching system using **semantic e
 - Evaluate CVs based on semantic similarity and relevance.
 - Avoid reprocessing of previously analyzed resumes.
 - Reuse embeddings for duplicate job descriptions.
+- Generate professional job descriptions via Hugging Face API.
 
 ---
 
@@ -14,6 +15,7 @@ This project implements a smart job-candidate matching system using **semantic e
 - 📄 Supports PDF and DOCX resume parsing.
 - 🧠 Semantic similarity scoring using Sentence Transformers.
 - 📊 Relevance scoring with experience weighting.
+- ✍️ Job description generation via Hugging Face models (e.g., Mixtral-8x7B).
 - 🔁 Embedding caching for duplicate jobs.
 - ⚡ FastAPI-powered RESTful backend.
 
@@ -39,6 +41,8 @@ sentence-transformers
 python-docx
 PyMuPDF
 torch
+dotenv
+requests
 ```
 
 ---
@@ -145,6 +149,28 @@ uvicorn main:app --reload
 
 ---
 
+### 3. `/generate-jd` (POST)
+
+**Description:** Generates a professional job description using Hugging Face model.
+
+#### 📥 Request (form-data):
+
+| Field      | Type   | Description            |
+| ---------- | ------ | ---------------------- |
+| job_title  | string | Job title              |
+| skills     | string | Comma-separated skills |
+| experience | string | Years of experience    |
+
+#### 📤 Response:
+
+```json
+{
+  "job_description": "- Software Engineer\n- Company Description: ...\n- Responsibilities:\n- ...\n- Requirements:\n- ...\n- Benefits:\n- ..."
+}
+```
+
+---
+
 ## 📁 Folder Structure
 
 ```bash
@@ -153,6 +179,7 @@ uvicorn main:app --reload
 ├── processed_cvs.json       # Auto-generated processed CV cache
 ├── job_embeds.json          # Auto-generated job embedding cache
 ├── resumes/                 # (Place your test resumes here)
+├── .env                     # Hugging Face API key
 └── README.md
 ```
 
@@ -170,11 +197,13 @@ uvicorn main:app --reload
 - Resume data is hashed to avoid duplicate processing.
 - Job embeddings are cached via hash (MD5 of full job text).
 - Ensure resume files are readable and not encrypted.
+- Only certain Hugging Face models support `text-generation` APIs.
+- Use models like `mistralai/Mixtral-8x7B-Instruct-v0.1` for JD generation.
 
 ## Other Models
 
-- HuggingFaceH4/zephyr-7b-beta
-- mistralai/Mixtral-8x7B-Instruct-v0.1
+- HuggingFaceH4/zephyr-7b-beta ✅
+- mistralai/Mixtral-8x7B-Instruct-v0.1 ✅
 
 ---
 
