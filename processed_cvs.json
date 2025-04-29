@@ -1,17 +1,17 @@
 {
     "411fd4de965932506e9d6894881dcddd": {
         "filename": "POOJIT NAGALOTI RESUME.pdf",
-        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\POOJIT NAGALOTI RESUME.pdf",
         "semantic_score": 0.2552,
-        "experience_bonus": 0.3,
-        "relevance_score": 26.42
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 40.42
     },
     "714ebe3fd30a8301cf586c8512aef950": {
         "filename": "Poojit's Resume.pdf",
-        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit's Resume.pdf",
         "semantic_score": 0.3063,
-        "experience_bonus": 0.3,
-        "relevance_score": 30.51
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 44.51
     },
     "6e4b60dff9a8df0d5b525133985b5d5d": {
         "filename": "Poojit_Jagadeesh_Nagaloti-CV (1).docx",
@@ -36,10 +36,10 @@
     },
     "ce044116dc3063dcdb731bbba06f3a0c": {
         "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
-        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_Resume.docx",
         "semantic_score": 0.3212,
-        "experience_bonus": 0.3,
-        "relevance_score": 31.69
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 45.69
     },
     "a95e4d9f0270341125cf65e44bc551a3": {
         "filename": "Poojit_Jagadeesh_Nagaloti_Resume.pdf",
@@ -47,5 +47,472 @@
         "semantic_score": 0.3212,
         "experience_bonus": 0.3,
         "relevance_score": 31.69
+    },
+    "65f0f519c99c386facbd05d6e26cab9a": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.2528,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 20.22
+    },
+    "996a70790f78bc523c13414906d48d1d": {
+        "filename": "Poojit's Resume.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit's Resume.pdf",
+        "semantic_score": 0.3008,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 24.07
+    },
+    "7530d4511e6780ceaa81d561107d1e52": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV (1).docx",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti-CV (1).docx",
+        "semantic_score": 0.3626,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 29.01
+    },
+    "9e89eeebd3a535eff79d5a1f21c106b8": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti-CV.pdf",
+        "semantic_score": 0.3593,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 28.74
+    },
+    "a9027af6659b0f18b80793fa343132ec": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_CV.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_CV.pdf",
+        "semantic_score": 0.2889,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 23.12
+    },
+    "fac06dd85a08e8df10800868c8e62ef6": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.2889,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 23.12
+    },
+    "391eff2d3e786f6a59051bf73d455798": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_Resume.pdf",
+        "semantic_score": 0.2889,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 23.12
+    },
+    "38952f7aee63c9b32af9be2551c616dd": {
+        "filename": "Tarun_Resume.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Tarun_Resume.pdf",
+        "semantic_score": 0.3439,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 27.51
+    },
+    "1e93e3541689cc0d7b1b9c4d84cb091e": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.2573,
+        "actual_experience_years": 10.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 40.59
+    },
+    "0413aa151e6c4b283f5b67a55e481c98": {
+        "filename": "Poojit's Resume.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit's Resume.pdf",
+        "semantic_score": 0.163,
+        "actual_experience_years": 9538212512.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 33.04
+    },
+    "ac529ce48a3c265ea86c9a0105aaf416": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV (1).docx",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti-CV (1).docx",
+        "semantic_score": 0.2499,
+        "actual_experience_years": 9538212512.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 39.99
+    },
+    "f0bce8fa30b3eb71f4eac471af4a44ee": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti-CV.pdf",
+        "semantic_score": 0.2425,
+        "actual_experience_years": 9538212512.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 39.4
+    },
+    "61bf7d02992848bf24f3ba151c58d21f": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_CV.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_CV.pdf",
+        "semantic_score": 0.2653,
+        "actual_experience_years": 9538212512.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 41.23
+    },
+    "6a51f7cda0080a97657086c93b81326c": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.2653,
+        "actual_experience_years": 9538212512.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 41.23
+    },
+    "73420fbd7acfd93e1220cbca9c4c6e37": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Poojit_Jagadeesh_Nagaloti_Resume.pdf",
+        "semantic_score": 0.2653,
+        "actual_experience_years": 9538212512.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 41.23
+    },
+    "76729348af3088e5646550ec3c6d09cc": {
+        "filename": "Tarun_Resume.pdf",
+        "filepath": "C:\\Desktop\\Web Development\\resume_evaluation_system\\resumes\\Tarun_Resume.pdf",
+        "semantic_score": 0.3695,
+        "actual_experience_years": 7501.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 49.56
+    },
+    "16ea4d80843670bd03db8039f39376f6": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.2475,
+        "relevance_score": 24.75
+    },
+    "25c2bebd29aa456a004f4b170345705e": {
+        "filename": "Poojit's Resume.pdf",
+        "semantic_score": 0.1621,
+        "relevance_score": 16.21
+    },
+    "1048f16f634951e087196e683001d348": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV (1).docx",
+        "semantic_score": 0.254,
+        "relevance_score": 25.4
+    },
+    "302f1c829c5209a9d10360a6b96caaa1": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV.pdf",
+        "semantic_score": 0.2482,
+        "relevance_score": 24.82
+    },
+    "02a0ac0468dcce44cc2e75421cc74d78": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_CV.pdf",
+        "semantic_score": 0.2737,
+        "relevance_score": 27.37
+    },
+    "551ae00b42533e44e5b46dd0a8fa6be2": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.2737,
+        "relevance_score": 27.37
+    },
+    "c5c49ea612db631835e5b36d139a7da1": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.pdf",
+        "semantic_score": 0.2737,
+        "relevance_score": 27.37
+    },
+    "02c9ebc0ad4b5a5f2979a3507ffb2dd1": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.3795,
+        "relevance_score": 37.95
+    },
+    "c749f5a98b24c119b043417401175447": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.2363,
+        "relevance_score": 23.63
+    },
+    "fe5150c8ec524f62de4314ed1e0dd1bb": {
+        "filename": "Poojit's Resume.pdf",
+        "semantic_score": 0.2101,
+        "relevance_score": 21.01
+    },
+    "df01fd80ae3905f4d418dfd7509872eb": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV (1).docx",
+        "semantic_score": 0.2839,
+        "relevance_score": 28.39
+    },
+    "c67fc6d1d4ae09ed74e612cca77bd57b": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV.pdf",
+        "semantic_score": 0.2792,
+        "relevance_score": 27.92
+    },
+    "4aeed194fe40972cffcd4ddd9a99a373": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_CV.pdf",
+        "semantic_score": 0.2807,
+        "relevance_score": 28.07
+    },
+    "dc9899dd16b3b27d55adf066b87f8534": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.2807,
+        "relevance_score": 28.07
+    },
+    "8b797ab36b0472a15b28460e4cad95cd": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.pdf",
+        "semantic_score": 0.2807,
+        "relevance_score": 28.07
+    },
+    "523864001fe7d1b586f75d4ac19e128e": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.3853,
+        "relevance_score": 38.53
+    },
+    "db8619925df2e218de8524c3181d0da7": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.2112,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 16.89
+    },
+    "8cc018cc320d9e87fab16a4c26989ff5": {
+        "filename": "Poojit's Resume.pdf",
+        "semantic_score": 0.2231,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 17.85
+    },
+    "004ad230bdb002a0056f4f60a10e40a8": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV (1).docx",
+        "semantic_score": 0.2979,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 23.83
+    },
+    "af167959d14c0184f6094113ccc548f1": {
+        "filename": "Poojit_Jagadeesh_Nagaloti-CV.pdf",
+        "semantic_score": 0.292,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 23.36
+    },
+    "d45452e807e8838e316947613817d48e": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_CV.pdf",
+        "semantic_score": 0.2265,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 18.12
+    },
+    "3c9522c885a300133d088cbc25369dfd": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.2265,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 18.12
+    },
+    "77638592a5896cc78f8f9e277192cd72": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.pdf",
+        "semantic_score": 0.2265,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 0.0,
+        "relevance_score": 18.12
+    },
+    "6119d116527f736b89dc1f075a458bf7": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.2673,
+        "actual_experience_years": 6.5,
+        "experience_bonus": 1.0,
+        "relevance_score": 41.38
+    },
+    "31e3f52df662b56007effc19e3a13182": {
+        "filename": "Ananya_Roy_Resume.pdf",
+        "semantic_score": 0.2401,
+        "actual_experience_years": 4.25,
+        "experience_bonus": 1.0,
+        "relevance_score": 39.21
+    },
+    "60a9feb2c66ab9493efe3e93a7cfbab7": {
+        "filename": "Arjun_Nair_Resume.pdf",
+        "semantic_score": 0.4042,
+        "actual_experience_years": 6.08,
+        "experience_bonus": 1.0,
+        "relevance_score": 52.34
+    },
+    "25b63af6785b1c5d57f4f2d04a609bc3": {
+        "filename": "Priya_Sharma_Resume.pdf",
+        "semantic_score": 0.3983,
+        "actual_experience_years": 3.83,
+        "experience_bonus": 1.0,
+        "relevance_score": 51.87
+    },
+    "0d3899915d93cbc5add5e5c35f42d8d2": {
+        "filename": "Rahul_Verma_Resume.pdf",
+        "semantic_score": 0.2698,
+        "actual_experience_years": 4.92,
+        "experience_bonus": 1.0,
+        "relevance_score": 41.58
+    },
+    "b577bf229765514aada9baed498d777c": {
+        "filename": "Sneha_Kulkarni_Resume.pdf",
+        "semantic_score": 0.4171,
+        "actual_experience_years": 2.67,
+        "experience_bonus": 1.0,
+        "relevance_score": 53.37
+    },
+    "0374ea2dbdc8d907856dcdcb73bad7f3": {
+        "filename": "Ananya_Roy_Resume.pdf",
+        "semantic_score": 0.5196,
+        "actual_experience_years": 4.25,
+        "experience_bonus": 1.0,
+        "relevance_score": 61.57
+    },
+    "620e89dc146efd39f41aa78c0f49d427": {
+        "filename": "Arjun_Nair_Resume.pdf",
+        "semantic_score": 0.3949,
+        "actual_experience_years": 6.08,
+        "experience_bonus": 1.0,
+        "relevance_score": 51.59
+    },
+    "3192ed9d906c6877487233a17e2e077a": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.3885,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 51.08
+    },
+    "1724d38073d5f4c6adfead727050270c": {
+        "filename": "Poojit's Resume.pdf",
+        "semantic_score": 0.3972,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 51.78
+    },
+    "11f2bb6c7cd01c41f0dd0f11d1517a23": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.4403,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 55.22
+    },
+    "4a19a353f60334d1e3e96ece6c8b0b17": {
+        "filename": "Priya_Sharma_Resume.pdf",
+        "semantic_score": 0.4012,
+        "actual_experience_years": 3.83,
+        "experience_bonus": 1.0,
+        "relevance_score": 52.09
+    },
+    "3737f4bc8bf64c991bf3b9d84e1f2565": {
+        "filename": "Rahul_Verma_Resume.pdf",
+        "semantic_score": 0.5704,
+        "actual_experience_years": 4.92,
+        "experience_bonus": 1.0,
+        "relevance_score": 65.63
+    },
+    "599d33ad8f85b65c2f1d074dd23c7b75": {
+        "filename": "Sneha_Kulkarni_Resume.pdf",
+        "semantic_score": 0.3748,
+        "actual_experience_years": 2.67,
+        "experience_bonus": 1.0,
+        "relevance_score": 49.99
+    },
+    "50933e37d8050702f666d590873483eb": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.3431,
+        "actual_experience_years": 6.5,
+        "experience_bonus": 1.0,
+        "relevance_score": 47.45
+    },
+    "05f89054f5ef0505e37f1099b4c9b0a6": {
+        "filename": "Ananya_Roy_Resume.pdf",
+        "semantic_score": 0.4517,
+        "actual_experience_years": 4.25,
+        "experience_bonus": 1.0,
+        "relevance_score": 56.13
+    },
+    "6e08b6616bc97ff51c4beee6dac9c4e6": {
+        "filename": "Arjun_Nair_Resume.pdf",
+        "semantic_score": 0.4443,
+        "actual_experience_years": 6.08,
+        "experience_bonus": 1.0,
+        "relevance_score": 55.55
+    },
+    "a9a759b6268550864dc2586f287e7e8b": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.3106,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 44.85
+    },
+    "7e1ea19940ceeec04646d4affd745698": {
+        "filename": "Poojit's Resume.pdf",
+        "semantic_score": 0.4628,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 57.02
+    },
+    "30406d0ab5c93b409048fbf7bc02b664": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.464,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 57.12
+    },
+    "38bef232f9a83f089b677aceb64af47a": {
+        "filename": "Priya_Sharma_Resume.pdf",
+        "semantic_score": 0.4541,
+        "actual_experience_years": 3.83,
+        "experience_bonus": 1.0,
+        "relevance_score": 56.33
+    },
+    "5c35bdd089f0ad08663276c88cb3e319": {
+        "filename": "Rahul_Verma_Resume.pdf",
+        "semantic_score": 0.3731,
+        "actual_experience_years": 4.92,
+        "experience_bonus": 1.0,
+        "relevance_score": 49.85
+    },
+    "8613c42992163afe83a929456572edf2": {
+        "filename": "Sneha_Kulkarni_Resume.pdf",
+        "semantic_score": 0.4639,
+        "actual_experience_years": 2.67,
+        "experience_bonus": 1.0,
+        "relevance_score": 57.11
+    },
+    "beac9c89f1b47177061f66071231f718": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.2915,
+        "actual_experience_years": 6.5,
+        "experience_bonus": 1.0,
+        "relevance_score": 43.32
+    },
+    "a61578019d0e2b1384dad1775af4a537": {
+        "filename": "Ananya_Roy_Resume.pdf",
+        "semantic_score": 0.3911,
+        "actual_experience_years": 4.25,
+        "experience_bonus": 1.0,
+        "relevance_score": 51.29
+    },
+    "da0b83c590c93c9ad13c097bc821a056": {
+        "filename": "Arjun_Nair_Resume.pdf",
+        "semantic_score": 0.4981,
+        "actual_experience_years": 6.08,
+        "experience_bonus": 1.0,
+        "relevance_score": 59.85
+    },
+    "00c0657b196fac20dfaae1c6b125e990": {
+        "filename": "Priya_Sharma_Resume.pdf",
+        "semantic_score": 0.5249,
+        "actual_experience_years": 3.83,
+        "experience_bonus": 1.0,
+        "relevance_score": 61.99
+    },
+    "98e83c5327f9e8d0acece685224f32b8": {
+        "filename": "Rahul_Verma_Resume.pdf",
+        "semantic_score": 0.3605,
+        "actual_experience_years": 4.92,
+        "experience_bonus": 1.0,
+        "relevance_score": 48.84
+    },
+    "13eb7d7096be71c71b2c43106a6c0432": {
+        "filename": "Sneha_Kulkarni_Resume.pdf",
+        "semantic_score": 0.4657,
+        "actual_experience_years": 2.67,
+        "experience_bonus": 1.0,
+        "relevance_score": 57.26
+    },
+    "1180f085e3207d33467e8d85e744057f": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.3199,
+        "actual_experience_years": 6.5,
+        "experience_bonus": 1.0,
+        "relevance_score": 45.59
     }
 }

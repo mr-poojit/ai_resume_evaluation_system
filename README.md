@@ -171,6 +171,11 @@ uvicorn main:app --reload
 - Job embeddings are cached via hash (MD5 of full job text).
 - Ensure resume files are readable and not encrypted.
 
+## Other Models
+
+- HuggingFaceH4/zephyr-7b-beta
+- mistralai/Mixtral-8x7B-Instruct-v0.1
+
 ---
 
 ## 📬 Contact
