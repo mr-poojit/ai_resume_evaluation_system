@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException, Form
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer, util
+from huggingface_hub import InferenceApi
 from fastapi.responses import JSONResponse
+import google.generativeai as genai
 import requests
 import json
 from dotenv import load_dotenv
@@ -10,7 +12,6 @@ import fitz
 import docx
 import os
 import hashlib
-import json
 import torch
 import csv
 import re
@@ -31,16 +32,10 @@ if os.path.exists(PROCESSED_CVS_FILE):
 else:
     processed_resumes = {}
 
-# -------------------
-# NEW: Huggingface API settings
-# -------------------
-HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")  # Set this as an environment variable
-HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+genai.configure(api_key=GEMINI_API_KEY)
 
-headers = {
-    "Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}",
-    "Content-Type": "application/json"
-}
 
 ROLE_SYNONYMS = {
     "software developer": "software engineer",
@@ -139,13 +134,9 @@ def get_combined_hash(file_path: str, job_description: str) -> str:
 # -------------------------------
 # NEW: API to generate JD
 # -------------------------------
-HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")  # Set this as an environment variable
-HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
-
-headers = {
-    "Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}",
-    "Content-Type": "application/json"
-}
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+genai.configure(api_key=GEMINI_API_KEY)
 
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):
@@ -156,25 +147,12 @@ def generate_job_description(job_title: str = Form(...), skills: str = Form(...)
         f"Format the output in bullet points under responsibilities and requirements.\n"
     )
 
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "temperature": 0.7,
-            "max_new_tokens": 400,
-            "top_p": 0.9,
-            "return_full_text": False
-        }
-    }
-
-    response = requests.post(HUGGINGFACE_API_URL, headers=headers, json=payload)
-
-    if response.status_code != 200:
-        raise HTTPException(status_code=500, detail=f"HuggingFace API Error: {response.status_code} {response.text}")
-
-    generated_text = response.json()[0]["generated_text"]
-
-    # Return escaped `\n` using json.dumps()
-    return JSONResponse(content={"job_description": json.dumps(generated_text)})
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash-latest")
+        response = model.generate_content(prompt)
+        return {"job_description": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # -------------------------------
 # Existing: API to embed job
