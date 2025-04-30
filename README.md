@@ -43,6 +43,9 @@ PyMuPDF
 torch
 dotenv
 requests
+transformers datasets huggingface_hub accelerate evaluate tokenizers
+google-generativeai
+
 ```
 
 ---
@@ -171,6 +174,18 @@ uvicorn main:app --reload
 
 ---
 
+## 🚀 Step 1: Get Your Gemini API Key
+
+- Go to: https://makersuite.google.com/app
+- Sign in with your Google account.
+- Click on your profile > "Get API key" or go directly to https://makersuite.google.com/app/apikey.
+- Copy the generated API key.
+- Store it securely. For example, in your .env file:
+
+```bash
+GEMINI_API_KEY=your_api_key_here
+```
+
 ## 📁 Folder Structure
 
 ```bash
@@ -198,12 +213,7 @@ uvicorn main:app --reload
 - Job embeddings are cached via hash (MD5 of full job text).
 - Ensure resume files are readable and not encrypted.
 - Only certain Hugging Face models support `text-generation` APIs.
-- Use models like `mistralai/Mixtral-8x7B-Instruct-v0.1` for JD generation.
-
-## Other Models
-
-- HuggingFaceH4/zephyr-7b-beta ✅
-- mistralai/Mixtral-8x7B-Instruct-v0.1 ✅
+- Use models like `gemini-1.5-flash-latest` for JD generation.
 
 ---
 

@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sentence-transformers
+python-docx
+PyMuPDF
+torch
+dotenv
+requests
+transformers 
+google-generativeai

@@ -514,5 +514,131 @@
         "actual_experience_years": 6.5,
         "experience_bonus": 1.0,
         "relevance_score": 45.59
+    },
+    "879ddc69a09afaf6f3a54fd6d84217a8": {
+        "filename": "Ananya_Roy_Resume.pdf",
+        "semantic_score": 0.1288,
+        "actual_experience_years": 4.25,
+        "experience_bonus": 1.0,
+        "relevance_score": 30.31
+    },
+    "3505f4b19f6ea76c6846a861f2c1a030": {
+        "filename": "Arjun_Nair_Resume.pdf",
+        "semantic_score": 0.1065,
+        "actual_experience_years": 6.08,
+        "experience_bonus": 1.0,
+        "relevance_score": 28.52
+    },
+    "002de4c6995a10d3f6302ba00909e57c": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.2595,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 40.76
+    },
+    "3b8919cc5705c51c87cbd09486ab45aa": {
+        "filename": "Poojit's Resume.pdf",
+        "semantic_score": 0.0891,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 27.13
+    },
+    "5d7792028fac155588b157bc6d35aa4f": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.1493,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 31.94
+    },
+    "a616f6050d058194ff2c12a8a472813c": {
+        "filename": "Priya_Sharma_Resume.pdf",
+        "semantic_score": 0.076,
+        "actual_experience_years": 3.83,
+        "experience_bonus": 1.0,
+        "relevance_score": 26.08
+    },
+    "a17776418f41703663e838467d4cf94b": {
+        "filename": "Rahul_Verma_Resume.pdf",
+        "semantic_score": 0.1662,
+        "actual_experience_years": 4.92,
+        "experience_bonus": 1.0,
+        "relevance_score": 33.29
+    },
+    "cd8604ac3c60d6bb640865d457cb77b4": {
+        "filename": "Sneha_Kulkarni_Resume.pdf",
+        "semantic_score": 0.1195,
+        "actual_experience_years": 2.67,
+        "experience_bonus": 1.0,
+        "relevance_score": 29.56
+    },
+    "5782eb8a5b2dab471351cbd9a3c5720b": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.2207,
+        "actual_experience_years": 6.5,
+        "experience_bonus": 1.0,
+        "relevance_score": 37.65
+    },
+    "b41e00f6cfaa07224dfe9fbb0d1274b4": {
+        "filename": "Ananya_Roy_Resume.pdf",
+        "semantic_score": 0.6015,
+        "actual_experience_years": 4.25,
+        "experience_bonus": 1.0,
+        "relevance_score": 68.12
+    },
+    "f0ec61e2cffb02182392db2bbbbdfe19": {
+        "filename": "Arjun_Nair_Resume.pdf",
+        "semantic_score": 0.3941,
+        "actual_experience_years": 6.08,
+        "experience_bonus": 1.0,
+        "relevance_score": 51.53
+    },
+    "41c1fa5aae2a943f76fb7e993e21828f": {
+        "filename": "POOJIT NAGALOTI RESUME.pdf",
+        "semantic_score": 0.355,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 48.4
+    },
+    "2967d3d67bfd7c7137c8f00483b74d32": {
+        "filename": "Poojit's Resume.pdf",
+        "semantic_score": 0.3542,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 48.33
+    },
+    "bc8d5e58c5e78849569dd7fe64a3d384": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.5119,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 60.95
+    },
+    "718fb8be0f12c461cb8dbce338e181a3": {
+        "filename": "Priya_Sharma_Resume.pdf",
+        "semantic_score": 0.4119,
+        "actual_experience_years": 3.83,
+        "experience_bonus": 1.0,
+        "relevance_score": 52.95
+    },
+    "764a23cf81fdfdbd41ade182764cac04": {
+        "filename": "Rahul_Verma_Resume.pdf",
+        "semantic_score": 0.6878,
+        "actual_experience_years": 4.92,
+        "experience_bonus": 1.0,
+        "relevance_score": 75.03
+    },
+    "f421a5cfb59fec57949e3c92e8c0ba47": {
+        "filename": "Sneha_Kulkarni_Resume.pdf",
+        "semantic_score": 0.3972,
+        "actual_experience_years": 2.67,
+        "experience_bonus": 1.0,
+        "relevance_score": 51.77
+    },
+    "053c849d2722d050885ac17e0c9bc69d": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.5997,
+        "actual_experience_years": 6.5,
+        "experience_bonus": 1.0,
+        "relevance_score": 67.98
     }
 }
