@@ -2,9 +2,12 @@ fastapi
 uvicorn
 sentence-transformers
 python-docx
+pdfplumber
 PyMuPDF
 torch
 dotenv
 requests
 transformers 
 google-generativeai
+Spacy
+python -m spacy download en_core_web_sm

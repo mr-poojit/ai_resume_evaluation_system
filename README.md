@@ -7,6 +7,7 @@ This project implements a smart job-candidate matching system using **semantic e
 - Avoid reprocessing of previously analyzed resumes.
 - Reuse embeddings for duplicate job descriptions.
 - Generate professional job descriptions via Hugging Face API.
+- Extract key details from resumes: First Name, Middle Name, Last Name, Email, Mobile Number, Experience.
 
 ---
 
@@ -18,10 +19,11 @@ This project implements a smart job-candidate matching system using **semantic e
 - ✍️ Job description generation via Hugging Face models (e.g., Mixtral-8x7B).
 - 🔁 Embedding caching for duplicate jobs.
 - ⚡ FastAPI-powered RESTful backend.
+- 🔍 Extracts structured data from resumes (name, email, phone, experience).
 
 ---
 
-## 📦 Requirements
+## 📆 Requirements
 
 - Python 3.8+
 - `virtualenv` or `venv` for isolated environment
@@ -43,14 +45,16 @@ PyMuPDF
 torch
 dotenv
 requests
-transformers datasets huggingface_hub accelerate evaluate tokenizers
 google-generativeai
-
+transformers
+google-generativeai
+spacy
+python -m spacy download en_core_web_sm
 ```
 
 ---
 
-## 🔁 Setup Instructions
+## ♻️ Setup Instructions
 
 ### 1. 🔃 Clone the Repo
 
@@ -75,7 +79,7 @@ virtualenv venv
 source venv/bin/activate
 ```
 
-### 3. 📦 Install Python Dependencies
+### 3. 📆 Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -100,7 +104,7 @@ uvicorn main:app --reload
 
 **Description:** Generates semantic embedding for a job.
 
-#### 📥 Request (form-data):
+#### 📅 Request (form-data):
 
 | Field       | Type   | Description                   |
 | ----------- | ------ | ----------------------------- |
@@ -124,7 +128,7 @@ uvicorn main:app --reload
 
 **Description:** Matches resumes against job description or job embedding.
 
-#### 📥 Request (form-data):
+#### 📅 Request (form-data):
 
 | Field              | Type   | Description                                      |
 | ------------------ | ------ | ------------------------------------------------ |
@@ -156,7 +160,7 @@ uvicorn main:app --reload
 
 **Description:** Generates a professional job description using Hugging Face model.
 
-#### 📥 Request (form-data):
+#### 📅 Request (form-data):
 
 | Field      | Type   | Description            |
 | ---------- | ------ | ---------------------- |
@@ -169,6 +173,31 @@ uvicorn main:app --reload
 ```json
 {
   "job_description": "- Software Engineer\n- Company Description: ...\n- Responsibilities:\n- ...\n- Requirements:\n- ...\n- Benefits:\n- ..."
+}
+```
+
+---
+
+### 4. `/extract-resume-data` (POST)
+
+**Description:** Extracts structured information from a resume file.
+
+#### 📅 Request (form-data):
+
+| Field | Type | Description                 |
+| ----- | ---- | --------------------------- |
+| file  | file | Resume file (.pdf or .docx) |
+
+#### 📤 Response:
+
+```json
+{
+  "first_name": "John",
+  "middle_name": "Alan",
+  "last_name": "Doe",
+  "email": "john.doe@example.com",
+  "mobile": "+91-9123456780",
+  "experience": 5.2
 }
 ```
 

@@ -1,31 +1,30 @@
-from fastapi import FastAPI, HTTPException, Form
+from fastapi import FastAPI, HTTPException, Form, UploadFile, File
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer, util
-from huggingface_hub import InferenceApi
-from fastapi.responses import JSONResponse
 import google.generativeai as genai
-import requests
 import json
 from dotenv import load_dotenv
 import uvicorn
-import fitz 
+import fitz
 import docx
 import os
 import hashlib
-import torch
 import csv
 import re
-import requests
 from datetime import datetime
 from dateutil import parser
+import spacy
+import pdfplumber
+import docx
 
 app = FastAPI()
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
+nlp = spacy.load("en_core_web_sm")
 
 PROCESSED_CVS_FILE = "processed_cvs.json"
 
-# Load processed resumes if available
 if os.path.exists(PROCESSED_CVS_FILE):
     with open(PROCESSED_CVS_FILE, "r") as f:
         processed_resumes = json.load(f)
@@ -35,7 +34,6 @@ else:
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
-
 
 ROLE_SYNONYMS = {
     "software developer": "software engineer",
@@ -62,9 +60,20 @@ def normalize_role(role: str) -> str:
     role_lower = role.lower().strip()
     return ROLE_SYNONYMS.get(role_lower, role_lower)
 
+def extract_text_from_uploaded_file(file: UploadFile) -> str:
+    filename = file.filename.lower()
+    if filename.endswith(".pdf"):
+        with pdfplumber.open(file.file) as pdf:
+            return "\n".join([page.extract_text() or "" for page in pdf.pages])
+    elif filename.endswith(".docx"):
+        document = docx.Document(file.file)
+        return "\n".join([para.text for para in document.paragraphs])
+    else:
+        raise ValueError("Unsupported file type")
+
 def extract_years(text: str) -> float:
     text = text.lower()
-    exp_phrases = re.findall(r'(\d{1,2}(?:\.\d+)?)\s*\+?\s*(?:years|yrs)', text)
+    exp_phrases = re.findall(r'(\d{1,2}(?:\.\d+)?)\s*(?:years|yrs)', text)
     if exp_phrases:
         numbers = list(map(float, exp_phrases))
         if numbers:
@@ -118,12 +127,12 @@ def calculate_experience_bonus(required_experience: float, actual_experience: fl
         return round(actual_experience / required_experience, 2)
 
 def extract_text_from_pdf(file_path: str) -> str:
-    with fitz.open(file_path) as doc:
-        return "\n".join([page.get_text() for page in doc])
+    with pdfplumber.open(file_path) as pdf:
+        return "\n".join(page.extract_text() or "" for page in pdf.pages)
 
 def extract_text_from_docx(file_path: str) -> str:
     doc = docx.Document(file_path)
-    return "\n".join([para.text for para in doc.paragraphs])
+    return "\n".join(paragraph.text for paragraph in doc.paragraphs)
 
 def get_combined_hash(file_path: str, job_description: str) -> str:
     with open(file_path, "rb") as f:
@@ -131,12 +140,67 @@ def get_combined_hash(file_path: str, job_description: str) -> str:
     combined = file_content + job_description.encode('utf-8')
     return hashlib.md5(combined).hexdigest()
 
-# -------------------------------
-# NEW: API to generate JD
-# -------------------------------
-load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
+def extract_email(text):
+    match = re.search(r"[\w\.-]+@[\w\.-]+", text)
+    return match.group(0) if match else None
+
+def extract_mobile(text):
+    match = re.search(r"(\+91[\s\-]?)?\d{10}", text)
+    return match.group(0) if match else None
+
+def extract_name(text):
+    lines = text.split('\n')
+
+    potential_names = []
+    for line in lines:
+        line = line.strip()
+        if not line or '@' in line or any(char.isdigit() for char in line):
+            continue
+        if any(word in line.lower() for word in ['email', 'contact', 'phone', 'mobile', 'experience']):
+            continue
+       
+        words = line.split()
+        if 1 < len(words) <= 3 and all(re.fullmatch(r"[A-Z]+", w) or re.fullmatch(r"[A-Z][a-z]+", w) for w in words):
+            potential_names.append(words)
+
+    for name_parts in potential_names:
+        if len(name_parts) == 3:
+            return name_parts[0].title(), name_parts[1].title(), name_parts[2].title()
+        elif len(name_parts) == 2:
+            return name_parts[0].title(), "", name_parts[1].title()
+
+    match = re.search(r'([a-zA-Z]+)\.([a-zA-Z]+)@', text)
+    if match:
+        return match.group(1).capitalize(), "", match.group(2).capitalize()
+
+    return "", "", ""
+
+def extract_skills(text):
+    skills = set()
+
+    # Find "Skills" section
+    skill_section = ""
+    lines = text.split('\n')
+    for i, line in enumerate(lines):
+        if "skill" in line.lower():
+            # Capture the next few lines (up to 10 lines after)
+            skill_section = "\n".join(lines[i:i+10])
+            break
+
+    matches = re.findall(r'[:\-–•]\s*([^:\n]+)', skill_section)
+    for match in matches:
+        for skill in re.split(r',|;', match):
+            cleaned = skill.strip().strip('.').title()
+            if cleaned:
+                skills.add(cleaned)
+
+    return list(skills)
+
+def extract_experience(text):
+    date_years = extract_experience_from_dates(text)
+    if date_years > 0:
+        return date_years
+    return extract_years(text)
 
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):
@@ -154,9 +218,6 @@ def generate_job_description(job_title: str = Form(...), skills: str = Form(...)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# -------------------------------
-# Existing: API to embed job
-# -------------------------------
 @app.post("/job-embed")
 def get_job_embedding(
     job_title: str = Form(...),
@@ -188,9 +249,6 @@ def get_job_embedding(
 
     return {"embedding": embedding}
 
-# -------------------------------
-# Existing: API to match resumes
-# -------------------------------
 @app.post("/match-resumes")
 def match_resumes(
     job_description: str = Form(...),
@@ -223,9 +281,7 @@ def match_resumes(
 
         semantic_score = util.pytorch_cos_sim(resume_emb, job_emb_tensor).item()
 
-        actual_experience_years = extract_experience_from_dates(text)
-        if actual_experience_years == 0:
-            actual_experience_years = extract_years(text)
+        actual_experience_years = extract_experience(text)
 
         experience_bonus = calculate_experience_bonus(parsed_job_experience, actual_experience_years)
 
@@ -247,5 +303,34 @@ def match_resumes(
 
     return results
 
+@app.post("/extract-cv-info")
+async def extract_cv_info(file: UploadFile = File(...)):
+    try:
+        text = extract_text_from_uploaded_file(file)
+
+        email = extract_email(text)
+        phone = extract_mobile(text)
+        skills = extract_skills(text)
+        first_name, middle_name, last_name = extract_name(text)
+        # project_data = extract_projects_and_experience(text)
+       
+
+        experience = extract_experience_from_dates(text)
+        if experience == 0:
+            experience = extract_years(text)
+
+        return {
+            "first_name": first_name,
+            "middle_name": middle_name,
+            "last_name": last_name,
+            "skills": skills,
+            "email": email,
+            "mobile": phone,
+            "experience": experience,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing resume: {str(e)}")
+    
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
