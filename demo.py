@@ -145,62 +145,97 @@ def extract_email(text):
     return match.group(0) if match else None
 
 def extract_mobile(text):
-    match = re.search(r"(\+91[\s\-]?)?\d{10}", text)
+    match = re.search(r"(?:\+?\d{1,3})?[-.\s]?\(?\d{2,4}\)?[-.\s]?\d{3}[-.\s]?\d{4,6}", text)
     return match.group(0) if match else None
 
-def extract_name(text):
+def extract_name(text: str) -> tuple:
     lines = text.split('\n')
+    skip_words = {'resume', 'curriculum', 'vitae', 'cv', 'objective', 'summary', 'education', 'experience', 'technical', 'skills'}
 
-    potential_names = []
-    for line in lines:
-        line = line.strip()
-        if not line or '@' in line or any(char.isdigit() for char in line):
+    # Search for line with name label
+    for line in lines[:20]:
+        clean = line.strip()
+        # Remove known labels
+        clean = re.sub(r'(?i)^(name\s*[:\-]?)', '', clean).strip()
+        if not clean or '@' in clean or any(char.isdigit() for char in clean):
             continue
-        if any(word in line.lower() for word in ['email', 'contact', 'phone', 'mobile', 'experience']):
+        if clean.lower() in skip_words or any(word in clean.lower() for word in skip_words):
             continue
-       
-        words = line.split()
-        if 1 < len(words) <= 3 and all(re.fullmatch(r"[A-Z]+", w) or re.fullmatch(r"[A-Z][a-z]+", w) for w in words):
-            potential_names.append(words)
+        tokens = clean.split()
+        # Only accept valid-looking names
+        if 1 < len(tokens) <= 3 and all(word[0].isalpha() and word[0].isupper() for word in tokens):
+            return split_name_tokens(tokens)
 
-    for name_parts in potential_names:
-        if len(name_parts) == 3:
-            return name_parts[0].title(), name_parts[1].title(), name_parts[2].title()
-        elif len(name_parts) == 2:
-            return name_parts[0].title(), "", name_parts[1].title()
+    # Fallback to SpaCy NER
+    doc = nlp(text)
+    for ent in doc.ents:
+        if ent.label_ == "PERSON":
+            tokens = ent.text.split()
+            if 1 < len(tokens) <= 3:
+                return split_name_tokens(tokens)
 
+    # Fallback to email pattern
     match = re.search(r'([a-zA-Z]+)\.([a-zA-Z]+)@', text)
     if match:
         return match.group(1).capitalize(), "", match.group(2).capitalize()
 
     return "", "", ""
 
+def split_name_tokens(tokens):
+    if len(tokens) == 2:
+        return tokens[0], "", tokens[1]
+    elif len(tokens) == 3:
+        return tokens[0], tokens[1], tokens[2]
+    elif len(tokens) == 1:
+        return tokens[0], "", ""
+    return "", "", ""
+
 def extract_skills(text):
     skills = set()
-
-    # Find "Skills" section
     skill_section = ""
     lines = text.split('\n')
+
+    # Find the line that contains "Skills"
     for i, line in enumerate(lines):
         if "skill" in line.lower():
-            # Capture the next few lines (up to 10 lines after)
-            skill_section = "\n".join(lines[i:i+10])
+            # Capture the next 15 lines instead of 10
+            skill_section = "\n".join(lines[i:i+15])
             break
 
+    # Capture comma or bullet-separated items
     matches = re.findall(r'[:\-–•]\s*([^:\n]+)', skill_section)
     for match in matches:
-        for skill in re.split(r',|;', match):
+        for skill in re.split(r',|;|\n|•|-|–', match):
             cleaned = skill.strip().strip('.').title()
             if cleaned:
                 skills.add(cleaned)
 
-    return list(skills)
+    # Backup: detect some known tech keywords throughout resume
+    common_skills = ['python', 'java', 'sql', 'html', 'css', 'javascript', 'tensorflow',
+                     'keras', 'pandas', 'numpy', 'excel', 'powerpoint', 'linux', 'git']
+    for skill in common_skills:
+        if re.search(r'\b' + re.escape(skill) + r'\b', text, re.IGNORECASE):
+            skills.add(skill.title())
+
+    return sorted(skills)
+
 
 def extract_experience(text):
-    date_years = extract_experience_from_dates(text)
-    if date_years > 0:
-        return date_years
-    return extract_years(text)
+    # Fallback strategy: count job durations
+    matches = re.findall(r'(\w+\s\d{4})\s*[-–]\s*(\w+\s\d{4}|Present)', text)
+    total_months = 0
+    from dateutil import parser
+    from datetime import datetime
+
+    for start, end in matches:
+        try:
+            start_date = parser.parse(start)
+            end_date = parser.parse(end) if end.lower() != 'present' else datetime.now()
+            diff = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
+            total_months += diff
+        except Exception:
+            continue
+    return round(total_months / 12, 1)  # Return in years
 
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):
@@ -311,9 +346,8 @@ async def extract_cv_info(file: UploadFile = File(...)):
         email = extract_email(text)
         phone = extract_mobile(text)
         skills = extract_skills(text)
+
         first_name, middle_name, last_name = extract_name(text)
-        # project_data = extract_projects_and_experience(text)
-       
 
         experience = extract_experience_from_dates(text)
         if experience == 0:
@@ -331,6 +365,6 @@ async def extract_cv_info(file: UploadFile = File(...)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing resume: {str(e)}")
-    
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
