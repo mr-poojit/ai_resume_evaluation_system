@@ -49,7 +49,9 @@ google-generativeai
 transformers
 google-generativeai
 spacy
-python -m spacy download en_core_web_sm
+nameparser
+openai>=1.0.0
+python-multipart
 ```
 
 ---

@@ -10,4 +10,6 @@ requests
 transformers 
 google-generativeai
 Spacy
-python -m spacy download en_core_web_sm
+namparser
+openai>=1.0.0
+python-multipart

@@ -3,11 +3,16 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer, util
 import google.generativeai as genai
+from nameparser import HumanName
+from typing import List
+from docx import Document
+import io
 import json
 from dotenv import load_dotenv
 import uvicorn
 import fitz
 import docx
+import openai
 import os
 import hashlib
 import csv
@@ -17,11 +22,12 @@ from dateutil import parser
 import spacy
 import pdfplumber
 import docx
+import pdfminer
 
 app = FastAPI()
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.load("en_core_web_trf")
 
 PROCESSED_CVS_FILE = "processed_cvs.json"
 
@@ -56,6 +62,67 @@ MONTHS_MAPPING = {
     'dec': '12', 'december': '12',
 }
 
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def extract_details_using_gpt(text: str) -> dict:
+    prompt = f"""
+Extract the following details from this resume strictly in JSON format:
+- Full Name
+- Email
+- Mobile Number
+- Total Years of Experience (based on years in job history)
+- Skills (as a list)
+
+Resume:
+\"\"\"
+{text}
+\"\"\"
+Return JSON only with keys: full_name, email, mobile_number, total_experience, skills.
+If any field is missing, return null or an empty list.
+"""
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            temperature=0,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        content = response["choices"][0]["message"]["content"]
+        # Try parsing GPT JSON safely
+        import json
+        match = re.search(r'\{.*\}', content, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+        else:
+            return {"error": "Failed to parse JSON from GPT", "raw_output": content}
+    except openai.error.OpenAIError as e:
+        return {"error": str(e)}
+    
+def clean_text(text: str) -> str:
+    return re.sub(r'\n+', '\n', text.strip())
+
+def call_gpt(text: str) -> dict:
+    system_prompt = "You are a resume parser. Extract full name, email, mobile number, total years of experience, and skills as a JSON."
+    user_prompt = f"Extract information from the following resume text:\n\n{text[:4000]}"  # Keep input within token limit
+
+    response = openai.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        temperature=0.2
+    )
+
+    content = response.choices[0].message.content
+    try:
+        # Expecting valid JSON in the response
+        import json
+        return json.loads(content)
+    except:
+        return {"raw_output": content, "error": "Failed to parse JSON from GPT"}
+    
+    
 def normalize_role(role: str) -> str:
     role_lower = role.lower().strip()
     return ROLE_SYNONYMS.get(role_lower, role_lower)
@@ -140,102 +207,58 @@ def get_combined_hash(file_path: str, job_description: str) -> str:
     combined = file_content + job_description.encode('utf-8')
     return hashlib.md5(combined).hexdigest()
 
+def extract_text(file: UploadFile):
+    if file.filename.endswith(".pdf"):
+        with pdfplumber.open(file.file) as pdf:
+            text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+    elif file.filename.endswith(".docx"):
+        doc = docx.Document(file.file)
+        text = "\n".join([para.text for para in doc.paragraphs])
+    else:
+        raise ValueError("Only PDF and DOCX files are supported")
+    return text
+
 def extract_email(text):
-    match = re.search(r"[\w\.-]+@[\w\.-]+", text)
+    match = re.search(r'\b[\w.-]+?@\w+?\.\w+?\b', text)
     return match.group(0) if match else None
 
-def extract_mobile(text):
-    match = re.search(r"(?:\+?\d{1,3})?[-.\s]?\(?\d{2,4}\)?[-.\s]?\d{3}[-.\s]?\d{4,6}", text)
+def extract_phone(text):
+    match = re.search(r'(\+?\d{1,3}[-.\s]?)?(\d{10})', text)
     return match.group(0) if match else None
 
-def extract_name(text: str) -> tuple:
-    lines = text.split('\n')
-    skip_words = {'resume', 'curriculum', 'vitae', 'cv', 'objective', 'summary', 'education', 'experience', 'technical', 'skills'}
-
-    # Search for line with name label
-    for line in lines[:20]:
-        clean = line.strip()
-        # Remove known labels
-        clean = re.sub(r'(?i)^(name\s*[:\-]?)', '', clean).strip()
-        if not clean or '@' in clean or any(char.isdigit() for char in clean):
-            continue
-        if clean.lower() in skip_words or any(word in clean.lower() for word in skip_words):
-            continue
-        tokens = clean.split()
-        # Only accept valid-looking names
-        if 1 < len(tokens) <= 3 and all(word[0].isalpha() and word[0].isupper() for word in tokens):
-            return split_name_tokens(tokens)
-
-    # Fallback to SpaCy NER
-    doc = nlp(text)
-    for ent in doc.ents:
-        if ent.label_ == "PERSON":
-            tokens = ent.text.split()
-            if 1 < len(tokens) <= 3:
-                return split_name_tokens(tokens)
-
-    # Fallback to email pattern
-    match = re.search(r'([a-zA-Z]+)\.([a-zA-Z]+)@', text)
-    if match:
-        return match.group(1).capitalize(), "", match.group(2).capitalize()
-
-    return "", "", ""
-
-def split_name_tokens(tokens):
-    if len(tokens) == 2:
-        return tokens[0], "", tokens[1]
-    elif len(tokens) == 3:
-        return tokens[0], tokens[1], tokens[2]
-    elif len(tokens) == 1:
-        return tokens[0], "", ""
-    return "", "", ""
+def extract_name(text):
+    lines = text.strip().split('\n')
+    for line in lines[:10]:  # First 10 lines are likely to contain the name
+        if len(line.strip().split()) in [2, 3] and line[0].isupper():
+            doc = nlp(line.strip())
+            for ent in doc.ents:
+                if ent.label_ == "PERSON":
+                    return ent.text
+    return "Unknown Name"
 
 def extract_skills(text):
-    skills = set()
-    skill_section = ""
-    lines = text.split('\n')
-
-    # Find the line that contains "Skills"
-    for i, line in enumerate(lines):
-        if "skill" in line.lower():
-            # Capture the next 15 lines instead of 10
-            skill_section = "\n".join(lines[i:i+15])
-            break
-
-    # Capture comma or bullet-separated items
-    matches = re.findall(r'[:\-–•]\s*([^:\n]+)', skill_section)
-    for match in matches:
-        for skill in re.split(r',|;|\n|•|-|–', match):
-            cleaned = skill.strip().strip('.').title()
-            if cleaned:
-                skills.add(cleaned)
-
-    # Backup: detect some known tech keywords throughout resume
-    common_skills = ['python', 'java', 'sql', 'html', 'css', 'javascript', 'tensorflow',
-                     'keras', 'pandas', 'numpy', 'excel', 'powerpoint', 'linux', 'git']
-    for skill in common_skills:
-        if re.search(r'\b' + re.escape(skill) + r'\b', text, re.IGNORECASE):
-            skills.add(skill.title())
-
-    return sorted(skills)
-
+    skill_keywords = [
+        'python', 'java', 'c++', 'javascript', 'react', 'node', 'angular',
+        'sql', 'mongodb', 'docker', 'kubernetes', 'aws', 'gcp', 'azure',
+        'html', 'css', 'tensorflow', 'pytorch', 'flask', 'fastapi'
+    ]
+    text_lower = text.lower()
+    found = [skill for skill in skill_keywords if skill in text_lower]
+    return list(set(found))
 
 def extract_experience(text):
-    # Fallback strategy: count job durations
-    matches = re.findall(r'(\w+\s\d{4})\s*[-–]\s*(\w+\s\d{4}|Present)', text)
-    total_months = 0
-    from dateutil import parser
-    from datetime import datetime
-
-    for start, end in matches:
-        try:
-            start_date = parser.parse(start)
-            end_date = parser.parse(end) if end.lower() != 'present' else datetime.now()
-            diff = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
-            total_months += diff
-        except Exception:
-            continue
-    return round(total_months / 12, 1)  # Return in years
+    # Try to extract years mentioned explicitly
+    match = re.search(r'(\d+(\.\d+)?)\s*(years|yrs)\s+of\s+(experience|exp)', text, re.IGNORECASE)
+    if match:
+        return match.group(1) + " years"
+    
+    # Fallback: infer from job dates like (2020 - 2023)
+    years = re.findall(r'((19|20)\d{2})\s*[-–to]+\s*((19|20)\d{2})', text)
+    if years:
+        total = sum(int(end) - int(start) for start, _, end, _ in years if int(end) >= int(start))
+        if total > 0:
+            return f"{total} years"
+    return None
 
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):
@@ -337,34 +360,14 @@ def match_resumes(
         json.dump(processed_resumes, f, indent=4)
 
     return results
-
-@app.post("/extract-cv-info")
-async def extract_cv_info(file: UploadFile = File(...)):
+@app.post("/parse-resume")
+async def parse_resume(file: UploadFile = File(...)):
     try:
-        text = extract_text_from_uploaded_file(file)
-
-        email = extract_email(text)
-        phone = extract_mobile(text)
-        skills = extract_skills(text)
-
-        first_name, middle_name, last_name = extract_name(text)
-
-        experience = extract_experience_from_dates(text)
-        if experience == 0:
-            experience = extract_years(text)
-
-        return {
-            "first_name": first_name,
-            "middle_name": middle_name,
-            "last_name": last_name,
-            "skills": skills,
-            "email": email,
-            "mobile": phone,
-            "experience": experience,
-        }
-
+        text = extract_text(file)
+        gpt_result = call_gpt(text)
+        return gpt_result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing resume: {str(e)}")
-
+        return {"error": str(e)}
+    
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
