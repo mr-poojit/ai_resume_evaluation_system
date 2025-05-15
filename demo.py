@@ -22,7 +22,7 @@ from dateutil import parser
 import spacy
 import pdfplumber
 import docx
-import pdfminer
+from typing import Dict, List
 
 app = FastAPI()
 
@@ -207,6 +207,17 @@ def get_combined_hash(file_path: str, job_description: str) -> str:
     combined = file_content + job_description.encode('utf-8')
     return hashlib.md5(combined).hexdigest()
 
+def get_text_hash(file_path: str) -> str:
+    if file_path.lower().endswith(".pdf"):
+        text = extract_text_from_pdf(file_path)
+    elif file_path.lower().endswith(".docx"):
+        text = extract_text_from_docx(file_path)
+    else:
+        return None
+
+    cleaned_text = text.strip().lower().replace('\n', ' ')
+    return hashlib.md5(cleaned_text.encode('utf-8')).hexdigest()
+
 def extract_text(file: UploadFile):
     if file.filename.endswith(".pdf"):
         with pdfplumber.open(file.file) as pdf:
@@ -368,6 +379,29 @@ async def parse_resume(file: UploadFile = File(...)):
         return gpt_result
     except Exception as e:
         return {"error": str(e)}
+
+@app.post("/find-duplicate-resumes")
+def find_duplicates(resume_folder_path: str = Form(...)):
+    if not os.path.exists(resume_folder_path):
+        raise HTTPException(status_code=400, detail="Resume folder path does not exist.")
+
+    hash_map: Dict[str, List[str]] = {}
+
+    for filename in os.listdir(resume_folder_path):
+        filepath = os.path.join(resume_folder_path, filename)
+        if not os.path.isfile(filepath):
+            continue
+
+        hash_val = get_text_hash(filepath)
+        if hash_val is None:
+            continue
+
+        hash_map.setdefault(hash_val, []).append(filename)
+
+    # Filter to only include hashes with duplicates
+    duplicates = {h: f for h, f in hash_map.items() if len(f) > 1}
+
+    return {"duplicates": duplicates, "total_duplicates": len(duplicates)}
     
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
