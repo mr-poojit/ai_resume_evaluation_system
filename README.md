@@ -223,6 +223,7 @@ Request (form-data)
     ["resume2.docx", "resume2 (1).docx"]
   ]
 }
+````
 
 ---
 
@@ -236,7 +237,7 @@ Request (form-data)
 
 ```bash
 GEMINI_API_KEY=your_api_key_here
-````
+```
 
 ## 📁 Folder Structure
 
