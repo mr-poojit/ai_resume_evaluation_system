@@ -8,7 +8,7 @@ This project implements a smart job-candidate matching system using **semantic e
 - Reuse embeddings for duplicate job descriptions.
 - Generate professional job descriptions via Hugging Face API.
 - Extract key details from resumes: First Name, Middle Name, Last Name, Email, Mobile Number, Experience.
-- Finds the Duplicate Resumes using Hash-functions.
+- Finds the Duplicate Resumes using Hash-functions.(even if phone and email changes)
 
 ---
 
@@ -204,15 +204,17 @@ uvicorn main:app --reload
 }
 ```
 
-````
+---
+
 ### 5. '/find-duplicate-resumes' (POST) 🆕
 
 Detects duplicate resumes from a folder, even if phone or email has changed.
 
 Request (form-data)
 
-|Field	             | Type	  | Description
-|resume_folder_path  | string	| Folder path with resumes
+| Field              | Type   | Description              |
+| ------------------ | ------ | ------------------------ |
+| resume_folder_path | string | Folder path with resumes |
 
 #### 📤 Response:
 
@@ -223,7 +225,7 @@ Request (form-data)
     ["resume2.docx", "resume2 (1).docx"]
   ]
 }
-````
+```
 
 ---
 
