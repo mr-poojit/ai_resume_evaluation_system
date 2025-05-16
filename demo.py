@@ -218,6 +218,26 @@ def get_text_hash(file_path: str) -> str:
     cleaned_text = text.strip().lower().replace('\n', ' ')
     return hashlib.md5(cleaned_text.encode('utf-8')).hexdigest()
 
+def clean_text_for_hashing(text: str) -> str:
+    # Remove emails
+    text = re.sub(r'\b[\w.-]+?@\w+?\.\w+?\b', '', text)
+    # Remove phone numbers
+    text = re.sub(r'(\+?\d{1,3}[-.\s]?)?(\d{10}|\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})', '', text)
+    # Lowercase and remove extra spaces
+    text = text.lower().strip().replace('\n', ' ')
+    return text
+
+def get_text_hash(file_path: str) -> str:
+    if file_path.lower().endswith(".pdf"):
+        text = extract_text_from_pdf(file_path)
+    elif file_path.lower().endswith(".docx"):
+        text = extract_text_from_docx(file_path)
+    else:
+        return None
+
+    cleaned_text = clean_text_for_hashing(text)
+    return hashlib.md5(cleaned_text.encode('utf-8')).hexdigest()
+
 def extract_text(file: UploadFile):
     if file.filename.endswith(".pdf"):
         with pdfplumber.open(file.file) as pdf:

@@ -8,6 +8,7 @@ This project implements a smart job-candidate matching system using **semantic e
 - Reuse embeddings for duplicate job descriptions.
 - Generate professional job descriptions via Hugging Face API.
 - Extract key details from resumes: First Name, Middle Name, Last Name, Email, Mobile Number, Experience.
+- Finds the Duplicate Resumes using Hash-functions.
 
 ---
 
@@ -61,8 +62,8 @@ python-multipart
 ### 1. 🔃 Clone the Repo
 
 ```bash
-git clone https://github.com/your-username/smart-resume-matcher.git
-cd smart-resume-matcher
+git clone https://github.com/zorhrm/resumes_ai.git
+cd resume_ai
 ```
 
 ### 2. 🐍 Create Virtual Environment
@@ -203,6 +204,26 @@ uvicorn main:app --reload
 }
 ```
 
+````
+### 5. '/find-duplicate-resumes' (POST) 🆕
+
+Detects duplicate resumes from a folder, even if phone or email has changed.
+
+Request (form-data)
+
+|Field	             | Type	  | Description
+|resume_folder_path  | string	| Folder path with resumes
+
+#### 📤 Response:
+
+```json
+{
+  "duplicates": [
+    ["resume1.pdf", "resume1_updated.pdf"],
+    ["resume2.docx", "resume2 (1).docx"]
+  ]
+}
+
 ---
 
 ## 🚀 Step 1: Get Your Gemini API Key
@@ -215,12 +236,12 @@ uvicorn main:app --reload
 
 ```bash
 GEMINI_API_KEY=your_api_key_here
-```
+````
 
 ## 📁 Folder Structure
 
 ```bash
-├── main.py                  # FastAPI application
+├── demo.py                  # FastAPI application
 ├── requirements.txt
 ├── processed_cvs.json       # Auto-generated processed CV cache
 ├── job_embeds.json          # Auto-generated job embedding cache
