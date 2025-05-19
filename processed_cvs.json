@@ -640,5 +640,61 @@
         "actual_experience_years": 6.5,
         "experience_bonus": 1.0,
         "relevance_score": 67.98
+    },
+    "7cf186f7a66bbc75afdd13c0b06eacc2": {
+        "filename": "Ananya_Roy_Resume.pdf",
+        "semantic_score": 0.2631,
+        "actual_experience_years": 4.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 41.04
+    },
+    "085c71de43ef8a4709924780b7b1a555": {
+        "filename": "Arjun_Nair_Resume.pdf",
+        "semantic_score": 0.3654,
+        "actual_experience_years": 6.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 49.23
+    },
+    "1431b970352897c2e595b8c0354aba22": {
+        "filename": "Poojit_Jagadeesh_Nagaloti.docx",
+        "semantic_score": 0.277,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 42.16
+    },
+    "8861a4b03c16f44962211ccfafe3b960": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.2778,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 42.22
+    },
+    "256aa04f5a384416cf1029ccc6e5db55": {
+        "filename": "Priya_Sharma_Resume.pdf",
+        "semantic_score": 0.4052,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 52.42
+    },
+    "7bd7b6b20890d2e6e5a025a1e8badf74": {
+        "filename": "Rahul_Verma_Resume.pdf",
+        "semantic_score": 0.2689,
+        "actual_experience_years": 5.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 41.51
+    },
+    "e6396d787a320b18ae053c391d45e842": {
+        "filename": "Sneha_Kulkarni_Resume.pdf",
+        "semantic_score": 0.4238,
+        "actual_experience_years": 2.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 53.91
+    },
+    "573c3eb6c314ffdddc12f36e1e7b65f3": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.2755,
+        "actual_experience_years": 4.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 42.04
     }
 }

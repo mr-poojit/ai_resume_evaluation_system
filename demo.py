@@ -148,44 +148,54 @@ def extract_years(text: str) -> float:
     return 0.0
 
 def extract_experience_from_dates(text: str) -> float:
-    text = text.lower()
     now = datetime.now()
-    matches = re.findall(r'([a-z]{3,9})\s*(\d{4})\s*(?:-|to|–)\s*([a-z]{3,9}|present|current)\s*(\d{0,4})?', text)
-
     total_months = 0
 
-    for match in matches:
-        start_month_text, start_year_text, end_month_text, end_year_text = match
+    # Match patterns like "Jan 2021 - Mar 2023", "January 2020 to Present", etc.
+    date_ranges = re.findall(
+        r'(?P<start_month>\b\w+)\s(?P<start_year>\d{4})\s*[-–to]+\s*(?P<end_month>\b\w+|\b[Pp]resent|\b[Cc]urrent)?\s*(?P<end_year>\d{4})?',
+        text
+    )
 
-        if not start_year_text.isdigit():
-            continue
+    # Extract phrases like "X years of experience"
+    match = re.search(r'(\d+(\.\d+)?)\s*(years|yrs)\s+of\s+(experience|exp)', text, re.IGNORECASE)
 
-        start_month = MONTHS_MAPPING.get(start_month_text[:3], '01')
-        start_year = start_year_text
+    for match in date_ranges:
+        start_month = MONTHS_MAPPING.get(match[0][:3].lower(), '01')
+        start_year = match[1]
 
-        try:
-            start_date = parser.parse(f"{start_year}-{start_month}-01")
-        except:
-            continue
-
-        if end_month_text in ['present', 'current']:
+        if match[2].lower() in ["present", "current"]:
             end_date = now
         else:
-            end_month = MONTHS_MAPPING.get(end_month_text[:3], '01')
-            end_year = end_year_text if end_year_text else start_year
+            end_month = MONTHS_MAPPING.get(match[2][:3].lower(), '01') if match[2] else '01'
+            end_year = match[3] if match[3] else start_year
             try:
-                end_date = parser.parse(f"{end_year}-{end_month}-01")
+                end_date = datetime.strptime(f"{end_year}-{end_month}-01", "%Y-%m-%d")
             except:
                 end_date = now
+
+        try:
+            start_date = datetime.strptime(f"{start_year}-{start_month}-01", "%Y-%m-%d")
+        except:
+            continue
 
         months = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
         if 0 < months < 600:
             total_months += months
 
-    total_years = round(total_months / 12, 2)
-    return total_years
+    return round(total_months / 12, 2)
 
-def calculate_experience_bonus(required_experience: float, actual_experience: float) -> float:
+def calculate_experience_bonus(required_experience, actual_experience) -> float:
+    try:
+        required_experience = float(required_experience)
+    except (ValueError, TypeError):
+        required_experience = 0.0
+
+    try:
+        actual_experience = float(actual_experience)
+    except (ValueError, TypeError):
+        return 0.0
+
     if actual_experience >= required_experience:
         return 1.0
     elif required_experience == 0:
@@ -278,18 +288,19 @@ def extract_skills(text):
     return list(set(found))
 
 def extract_experience(text):
-    # Try to extract years mentioned explicitly
-    match = re.search(r'(\d+(\.\d+)?)\s*(years|yrs)\s+of\s+(experience|exp)', text, re.IGNORECASE)
-    if match:
-        return match.group(1) + " years"
-    
-    # Fallback: infer from job dates like (2020 - 2023)
-    years = re.findall(r'((19|20)\d{2})\s*[-–to]+\s*((19|20)\d{2})', text)
-    if years:
+    try:
+        # Try direct numeric extraction
+        match = re.search(r'(\d+(\.\d+)?)\s*(years|yrs)\s+of\s+(experience|exp)', text, re.IGNORECASE)
+        if match:
+            return float(match.group(1))
+
+        # Try date range inference
+        years = re.findall(r'((19|20)\d{2})\s*[-–to]+\s*((19|20)\d{2})', text)
         total = sum(int(end) - int(start) for start, _, end, _ in years if int(end) >= int(start))
-        if total > 0:
-            return f"{total} years"
-    return None
+        return float(total) if total > 0 else 0.0
+    except:
+        return 0.0
+
 
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):
