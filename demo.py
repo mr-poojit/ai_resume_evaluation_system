@@ -147,43 +147,99 @@ def extract_years(text: str) -> float:
             return max(numbers)
     return 0.0
 
-def extract_experience_from_dates(text: str) -> float:
+def extract_experience(text: str) -> float:
+    from dateutil import parser
+    from datetime import datetime
+
+    text = text.lower()
     now = datetime.now()
     total_months = 0
+    seen_ranges = set()
 
-    # Match patterns like "Jan 2021 - Mar 2023", "January 2020 to Present", etc.
-    date_ranges = re.findall(
-        r'(?P<start_month>\b\w+)\s(?P<start_year>\d{4})\s*[-–to]+\s*(?P<end_month>\b\w+|\b[Pp]resent|\b[Cc]urrent)?\s*(?P<end_year>\d{4})?',
-        text
+    # Pattern for date ranges like "August 2022 - January 2023", "Jan 2023 to Present"
+    date_range_matches = re.findall(
+        r'([a-z]{3,9})[\s,]*(\d{4})\s*[-–to]+\s*([a-z]{3,9}|present|current)[\s,]*(\d{0,4})?', 
+        text, re.IGNORECASE
     )
 
-    # Extract phrases like "X years of experience"
-    match = re.search(r'(\d+(\.\d+)?)\s*(years|yrs)\s+of\s+(experience|exp)', text, re.IGNORECASE)
-
-    for match in date_ranges:
-        start_month = MONTHS_MAPPING.get(match[0][:3].lower(), '01')
-        start_year = match[1]
-
-        if match[2].lower() in ["present", "current"]:
-            end_date = now
-        else:
-            end_month = MONTHS_MAPPING.get(match[2][:3].lower(), '01') if match[2] else '01'
-            end_year = match[3] if match[3] else start_year
-            try:
-                end_date = datetime.strptime(f"{end_year}-{end_month}-01", "%Y-%m-%d")
-            except:
-                end_date = now
-
+    for start_month_text, start_year_text, end_month_text, end_year_text in date_range_matches:
         try:
-            start_date = datetime.strptime(f"{start_year}-{start_month}-01", "%Y-%m-%d")
+            start_month = MONTHS_MAPPING.get(start_month_text[:3].lower(), '01')
+            start_date = parser.parse(f"{start_year_text}-{start_month}-01")
+
+            if end_month_text.lower() in ["present", "current"]:
+                end_date = now
+            else:
+                end_month = MONTHS_MAPPING.get(end_month_text[:3].lower(), '01')
+                end_year = end_year_text if end_year_text and end_year_text.isdigit() else start_year_text
+                end_date = parser.parse(f"{end_year}-{end_month}-01")
+
+            if (start_date, end_date) in seen_ranges:
+                continue
+            seen_ranges.add((start_date, end_date))
+
+            months = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
+            if 3 <= months <= 600:
+                total_months += months
+
         except:
             continue
 
-        months = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
-        if 0 < months < 600:
-            total_months += months
+    # Fallback for phrases like "3+ years of experience"
+    text_exp_match = re.findall(r'(\d+(?:\.\d+)?)(?:\s*\+)?\s*(?:years|yrs)\s+(?:of\s+)?(?:experience|exp)', text)
+    text_years = max(map(float, text_exp_match)) if text_exp_match else 0
 
-    return round(total_months / 12, 2)
+    inferred_years = round(total_months / 12, 2)
+    return max(inferred_years, text_years)
+
+def extract_experience_from_dates(text: str) -> float:
+    text = text.lower()
+    now = datetime.now()
+
+    # Patterns to match various job date formats
+    patterns = [
+        r'([a-z]{3,9})[\s\-]*(\d{4})\s*(?:to|–|[-])\s*(present|current|[a-z]{3,9}[\s\-]*\d{4})',
+        r'(\d{4})\s*(?:to|–|[-])\s*(present|current|\d{4})'
+    ]
+
+    total_months = 0
+
+    for pattern in patterns:
+        for match in re.findall(pattern, text):
+            try:
+                if len(match) == 3:  # e.g., Jan 2020 - Present
+                    start_month, start_year, end = match
+                    start_month = MONTHS_MAPPING.get(start_month[:3], '01')
+                    start_date = parser.parse(f"{start_year}-{start_month}-01")
+
+                elif len(match) == 2:  # e.g., 2018 - 2021
+                    start_year, end = match
+                    start_date = parser.parse(f"{start_year}-01-01")
+
+                if 'present' in end or 'current' in end:
+                    end_date = now
+                else:
+                    try:
+                        if re.match(r'[a-z]{3,9}', end):
+                            end_month, end_year = end.split()
+                            end_month = MONTHS_MAPPING.get(end_month[:3], '01')
+                        elif re.match(r'[a-z]{3,9}\s*\d{4}', end):
+                            end_month, end_year = end[:3], end[-4:]
+                            end_month = MONTHS_MAPPING.get(end_month[:3], '01')
+                        else:
+                            end_date = parser.parse(f"{end}-01-01")
+                            raise Exception()  # Skip to except
+                        end_date = parser.parse(f"{end_year}-{end_month}-01")
+                    except:
+                        end_date = parser.parse(f"{end}-01-01")
+
+                months = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
+                if 0 < months < 600:
+                    total_months += months
+            except Exception as e:
+                continue
+
+    return round(total_months / 12, 2) if total_months > 0 else 0.0
 
 def calculate_experience_bonus(required_experience, actual_experience) -> float:
     try:
@@ -286,21 +342,6 @@ def extract_skills(text):
     text_lower = text.lower()
     found = [skill for skill in skill_keywords if skill in text_lower]
     return list(set(found))
-
-def extract_experience(text):
-    try:
-        # Try direct numeric extraction
-        match = re.search(r'(\d+(\.\d+)?)\s*(years|yrs)\s+of\s+(experience|exp)', text, re.IGNORECASE)
-        if match:
-            return float(match.group(1))
-
-        # Try date range inference
-        years = re.findall(r'((19|20)\d{2})\s*[-–to]+\s*((19|20)\d{2})', text)
-        total = sum(int(end) - int(start) for start, _, end, _ in years if int(end) >= int(start))
-        return float(total) if total > 0 else 0.0
-    except:
-        return 0.0
-
 
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):
