@@ -384,7 +384,8 @@ def generate_job_description(job_title: str = Form(...), skills: str = Form(...)
         f"Required experience: {experience} years.\n"
         f"Skills: {skills}.\n"
         f"Format the output in bullet points under responsibilities and requirements.\n"
-        f"return job description only in HTML Format"
+        f"return job description only in HTML Format and points should be in <ul><li>\n"
+        f"do not give job description heading location, and experience as only return JD, Key Responsibilities and Requirements.\n"
     )
 
     try:
