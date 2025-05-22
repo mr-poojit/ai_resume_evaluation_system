@@ -22,7 +22,9 @@ from dateutil import parser
 import spacy
 import pdfplumber
 import docx
-from typing import Dict, List
+import pytesseract
+from PIL import Image
+from typing import Dict, List, Optional
 
 app = FastAPI()
 
@@ -127,6 +129,10 @@ def normalize_role(role: str) -> str:
     role_lower = role.lower().strip()
     return ROLE_SYNONYMS.get(role_lower, role_lower)
 
+def normalize_years(text: str) -> str:
+    # Convert spaced years like '2 0 2 0' into '2020'
+    return re.sub(r'(?:(?:\d\s*){4})', lambda m: ''.join(m.group(0).split()), text)
+
 def extract_text_from_uploaded_file(file: UploadFile) -> str:
     filename = file.filename.lower()
     if filename.endswith(".pdf"):
@@ -140,57 +146,29 @@ def extract_text_from_uploaded_file(file: UploadFile) -> str:
 
 def extract_years(text: str) -> float:
     text = text.lower()
-    exp_phrases = re.findall(r'(\d{1,2}(?:\.\d+)?)\s*(?:years|yrs)', text)
-    if exp_phrases:
-        numbers = list(map(float, exp_phrases))
-        if numbers:
-            return max(numbers)
-    return 0.0
 
-def extract_experience(text: str) -> float:
-    from dateutil import parser
-    from datetime import datetime
+    # Common phrasing variations
+    experience_patterns = [
+        r'(\d{1,2}(?:\.\d+)?)\s*\+?\s*(?:years|yrs)\s+(?:of\s+)?(?:experience|exp)',
+        r'(?:experience|exp)\s+(?:of\s+)?(\d{1,2}(?:\.\d+)?)\s*\+?\s*(?:years|yrs)',
+        r'(\d{1,2}(?:\.\d+)?)\s*(?:years|yrs)',
+        r'(\d{1,2})\s*\+?\s*(?:years|yrs)\s*experience'
+    ]
 
-    text = text.lower()
-    now = datetime.now()
-    total_months = 0
-    seen_ranges = set()
+    max_years = 0.0
 
-    # Pattern for date ranges like "August 2022 - January 2023", "Jan 2023 to Present"
-    date_range_matches = re.findall(
-        r'([a-z]{3,9})[\s,]*(\d{4})\s*[-–to]+\s*([a-z]{3,9}|present|current)[\s,]*(\d{0,4})?', 
-        text, re.IGNORECASE
-    )
-
-    for start_month_text, start_year_text, end_month_text, end_year_text in date_range_matches:
-        try:
-            start_month = MONTHS_MAPPING.get(start_month_text[:3].lower(), '01')
-            start_date = parser.parse(f"{start_year_text}-{start_month}-01")
-
-            if end_month_text.lower() in ["present", "current"]:
-                end_date = now
-            else:
-                end_month = MONTHS_MAPPING.get(end_month_text[:3].lower(), '01')
-                end_year = end_year_text if end_year_text and end_year_text.isdigit() else start_year_text
-                end_date = parser.parse(f"{end_year}-{end_month}-01")
-
-            if (start_date, end_date) in seen_ranges:
+    for pattern in experience_patterns:
+        matches = re.findall(pattern, text)
+        for match in matches:
+            try:
+                # Handle match coming as tuple (grouped regex)
+                years = float(match[0] if isinstance(match, tuple) else match)
+                if 0 < years < 40:  # filter out unrealistic numbers
+                    max_years = max(max_years, years)
+            except:
                 continue
-            seen_ranges.add((start_date, end_date))
 
-            months = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
-            if 3 <= months <= 600:
-                total_months += months
-
-        except:
-            continue
-
-    # Fallback for phrases like "3+ years of experience"
-    text_exp_match = re.findall(r'(\d+(?:\.\d+)?)(?:\s*\+)?\s*(?:years|yrs)\s+(?:of\s+)?(?:experience|exp)', text)
-    text_years = max(map(float, text_exp_match)) if text_exp_match else 0
-
-    inferred_years = round(total_months / 12, 2)
-    return max(inferred_years, text_years)
+    return round(max_years, 2)
 
 def extract_experience_from_dates(text: str) -> float:
     text = text.lower()
@@ -260,8 +238,21 @@ def calculate_experience_bonus(required_experience, actual_experience) -> float:
         return round(actual_experience / required_experience, 2)
 
 def extract_text_from_pdf(file_path: str) -> str:
-    with pdfplumber.open(file_path) as pdf:
-        return "\n".join(page.extract_text() or "" for page in pdf.pages)
+    doc = fitz.open(file_path)
+    full_text = ""
+
+    for page in doc:
+        text = page.get_text()
+        if text.strip():
+            full_text += text
+        else:
+            # Fallback to OCR
+            pix = page.get_pixmap(dpi=300)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            ocr_text = pytesseract.image_to_string(img)
+            full_text += ocr_text
+
+    return full_text
 
 def extract_text_from_docx(file_path: str) -> str:
     doc = docx.Document(file_path)
@@ -342,6 +333,49 @@ def extract_skills(text):
     text_lower = text.lower()
     found = [skill for skill in skill_keywords if skill in text_lower]
     return list(set(found))
+
+def parse_date(month_str: str, year_str: str) -> Optional[datetime]:
+    try:
+        month = MONTHS_MAPPING.get(month_str[:3].lower(), '01')
+        return parser.parse(f"{year_str}-{month}-01")
+    except:
+        return None
+
+def extract_experience(text: str) -> float:
+    text = normalize_years(text.lower())
+    now = datetime.now()
+    total_months = 0
+    seen_ranges = set()
+
+    # Consider nearby job-related titles only
+    job_titles = ["engineer", "developer", "consultant", "intern", "analyst", "manager"]
+    lines = text.split('\n')
+
+    for idx, line in enumerate(lines):
+        if any(title in line for title in job_titles):
+            window = " ".join(lines[max(0, idx):idx+4])  # next 3 lines after title
+            date_patterns = re.findall(r'([a-z]{3,9})\s*(\d{4})\s*(?:to|–|[-])\s*([a-z]{3,9}|present|current)\s*(\d{4})?', window)
+            for sm, sy, em, ey in date_patterns:
+                try:
+                    start_date = parse_date(sm, sy)
+                    end_date = now if em in ['present', 'current'] else parse_date(em, ey or sy)
+                    if not start_date or not end_date or end_date < start_date:
+                        continue
+                    if (start_date, end_date) in seen_ranges:
+                        continue
+                    seen_ranges.add((start_date, end_date))
+                    months = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
+                    if 0 < months <= 480:
+                        total_months += months
+                except:
+                    continue
+
+    # Fallback: try catching "3+ years of experience" etc.
+    match_years = re.findall(r'(\d+(?:\.\d+)?)\s*\+?\s*(?:years|yrs)', text)
+    max_years = max([float(y) for y in match_years if float(y) <= 50], default=0.0)
+
+    inferred_years = round(total_months / 12, 2)
+    return max(inferred_years, max_years)
 
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):
