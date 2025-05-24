@@ -238,21 +238,24 @@ def calculate_experience_bonus(required_experience, actual_experience) -> float:
         return round(actual_experience / required_experience, 2)
 
 def extract_text_from_pdf(file_path: str) -> str:
-    doc = fitz.open(file_path)
-    full_text = ""
+    # First try with pdfplumber
+    try:
+        with pdfplumber.open(file_path) as pdf:
+            text = "\n".join([page.extract_text() or "" for page in pdf.pages])
+        if len(text.strip()) > 300:
+            return text
+    except:
+        pass
 
-    for page in doc:
-        text = page.get_text()
-        if text.strip():
-            full_text += text
-        else:
-            # Fallback to OCR
-            pix = page.get_pixmap(dpi=300)
-            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-            ocr_text = pytesseract.image_to_string(img)
-            full_text += ocr_text
-
-    return full_text
+    # Fallback to PyMuPDF
+    try:
+        doc = fitz.open(file_path)
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        return text
+    except Exception as e:
+        return ""
 
 def extract_text_from_docx(file_path: str) -> str:
     doc = docx.Document(file_path)
@@ -347,14 +350,16 @@ def extract_experience(text: str) -> float:
     total_months = 0
     seen_ranges = set()
 
-    # Consider nearby job-related titles only
-    job_titles = ["engineer", "developer", "consultant", "intern", "analyst", "manager"]
+    # Focus area: lines around job titles
+    job_titles = ["engineer", "developer", "consultant", "intern", "analyst", "manager", "associate", "lead", "designer", "architect", "specialist", "executive"]
     lines = text.split('\n')
 
+    # Look for job titles and analyze nearby date mentions
     for idx, line in enumerate(lines):
-        if any(title in line for title in job_titles):
-            window = " ".join(lines[max(0, idx):idx+4])  # next 3 lines after title
-            date_patterns = re.findall(r'([a-z]{3,9})\s*(\d{4})\s*(?:to|–|[-])\s*([a-z]{3,9}|present|current)\s*(\d{4})?', window)
+        if any(title in line.lower() for title in job_titles):
+            context_window = " ".join(lines[max(0, idx-2):idx+5])
+            date_patterns = re.findall(r'([a-z]{3,9})[\s\-]*(\d{4})\s*(?:to|–|[-])\s*([a-z]{3,9}|present|current)[\s\-]*(\d{4})?', context_window, re.IGNORECASE)
+
             for sm, sy, em, ey in date_patterns:
                 try:
                     start_date = parse_date(sm, sy)
@@ -370,12 +375,17 @@ def extract_experience(text: str) -> float:
                 except:
                     continue
 
-    # Fallback: try catching "3+ years of experience" etc.
-    match_years = re.findall(r'(\d+(?:\.\d+)?)\s*\+?\s*(?:years|yrs)', text)
-    max_years = max([float(y) for y in match_years if float(y) <= 50], default=0.0)
+    # Fallback pattern matching "3+ years", etc.
+    textual_matches = re.findall(r'(\d+(?:\.\d+)?)\s*\+?\s*(?:years|yrs|year)\s*(?:of)?\s*(?:experience|exp)?', text)
+    max_textual_years = max([float(y) for y in textual_matches if float(y) <= 50], default=0.0)
+    match_years = re.findall(r'(\d+(?:\.\d+)?)\s*\+?\s*(?:years|yrs)(?:\s+of\s+experience)?', text)
 
     inferred_years = round(total_months / 12, 2)
-    return max(inferred_years, max_years)
+
+    # Avoid double-counting: prefer the more conservative estimate
+    if 0.5 <= inferred_years <= 50 and abs(inferred_years - max_textual_years) <= 2:
+        return inferred_years
+    return max(inferred_years, max_textual_years)
 
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):

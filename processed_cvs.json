@@ -1249,5 +1249,82 @@
         "actual_experience_years": 4.0,
         "experience_bonus": 1.0,
         "relevance_score": 29.73
+    },
+    "e1a3940755f1387abac4b9aa7935e8ab": {
+        "filename": "Ananya_Roy_Resume.pdf",
+        "semantic_score": 0.2545,
+        "actual_experience_years": 4.33,
+        "experience_bonus": 1.0,
+        "relevance_score": 40.36
+    },
+    "53fc4573edbb96005c4233a432fe8c76": {
+        "filename": "Arjun_Nair_Resume.pdf",
+        "semantic_score": 0.3003,
+        "actual_experience_years": 6.17,
+        "experience_bonus": 1.0,
+        "relevance_score": 44.03
+    },
+    "b9fb950c0095c6283786d096032cf0be": {
+        "filename": "Black Yellow Modern Fashion Designer Resume.pdf",
+        "semantic_score": 0.1765,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 34.12
+    },
+    "838681838f08b3c47522ff221d62e991": {
+        "filename": "Blue and Cream Minimalist CV Resume A4.pdf",
+        "semantic_score": 0.3095,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 44.76
+    },
+    "835030313ea1c55b2113fa388dcd24b4": {
+        "filename": "Green Elegant Professional Resume.pdf",
+        "semantic_score": 0.2891,
+        "actual_experience_years": 4.08,
+        "experience_bonus": 1.0,
+        "relevance_score": 43.13
+    },
+    "07b691d6ef7aa78e1bdb3d94a6e10674": {
+        "filename": "Poojit_Jagadeesh_Nagaloti.docx",
+        "semantic_score": 0.2344,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 38.75
+    },
+    "620242c167efd0e4b0abedf89c9c9a9d": {
+        "filename": "Poojit_Jagadeesh_Nagaloti_Resume.docx",
+        "semantic_score": 0.2329,
+        "actual_experience_years": 0.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 38.63
+    },
+    "7df113e1ac7c21f284bc06b19f2cd661": {
+        "filename": "Priya_Sharma_Resume.pdf",
+        "semantic_score": 0.2728,
+        "actual_experience_years": 3.92,
+        "experience_bonus": 1.0,
+        "relevance_score": 41.82
+    },
+    "0f0b0c3ea85d0d40530a229ea98bdc61": {
+        "filename": "Rahul_Verma_Resume.pdf",
+        "semantic_score": 0.2809,
+        "actual_experience_years": 5.0,
+        "experience_bonus": 1.0,
+        "relevance_score": 42.47
+    },
+    "65a59f8ca08b44b715a15904045322e8": {
+        "filename": "Sneha_Kulkarni_Resume.pdf",
+        "semantic_score": 0.2596,
+        "actual_experience_years": 2.75,
+        "experience_bonus": 1.0,
+        "relevance_score": 40.77
+    },
+    "16768377be844621588c128d9f7d42f0": {
+        "filename": "Tarun_Resume.pdf",
+        "semantic_score": 0.2803,
+        "actual_experience_years": 4.25,
+        "experience_bonus": 1.0,
+        "relevance_score": 42.43
     }
 }
