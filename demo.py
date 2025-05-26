@@ -129,10 +129,6 @@ def normalize_role(role: str) -> str:
     role_lower = role.lower().strip()
     return ROLE_SYNONYMS.get(role_lower, role_lower)
 
-def normalize_years(text: str) -> str:
-    # Convert spaced years like '2 0 2 0' into '2020'
-    return re.sub(r'(?:(?:\d\s*){4})', lambda m: ''.join(m.group(0).split()), text)
-
 def extract_text_from_uploaded_file(file: UploadFile) -> str:
     filename = file.filename.lower()
     if filename.endswith(".pdf"):
@@ -219,64 +215,26 @@ def extract_experience_from_dates(text: str) -> float:
 
     return round(total_months / 12, 2) if total_months > 0 else 0.0
 
-def calculate_experience_bonus(required_experience, actual_experience) -> float:
-    try:
-        required_experience = float(required_experience)
-    except (ValueError, TypeError):
-        required_experience = 0.0
-
-    try:
-        actual_experience = float(actual_experience)
-    except (ValueError, TypeError):
-        return 0.0
-
-    if actual_experience >= required_experience:
-        return 1.0
-    elif required_experience == 0:
-        return 0.0
-    else:
-        return round(actual_experience / required_experience, 2)
-
 def extract_text_from_pdf(file_path: str) -> str:
-    # First try with pdfplumber
     try:
         with pdfplumber.open(file_path) as pdf:
             text = "\n".join([page.extract_text() or "" for page in pdf.pages])
-        if len(text.strip()) > 300:
-            return text
+            return text.strip()
     except:
-        pass
-
-    # Fallback to PyMuPDF
-    try:
-        doc = fitz.open(file_path)
-        text = ""
-        for page in doc:
-            text += page.get_text()
-        return text
-    except Exception as e:
         return ""
 
 def extract_text_from_docx(file_path: str) -> str:
-    doc = docx.Document(file_path)
-    return "\n".join(paragraph.text for paragraph in doc.paragraphs)
-
+    try:
+        doc = docx.Document(file_path)
+        return "\n".join(para.text for para in doc.paragraphs).strip()
+    except:
+        return ""
+    
 def get_combined_hash(file_path: str, job_description: str) -> str:
     with open(file_path, "rb") as f:
         file_content = f.read()
     combined = file_content + job_description.encode('utf-8')
     return hashlib.md5(combined).hexdigest()
-
-def get_text_hash(file_path: str) -> str:
-    if file_path.lower().endswith(".pdf"):
-        text = extract_text_from_pdf(file_path)
-    elif file_path.lower().endswith(".docx"):
-        text = extract_text_from_docx(file_path)
-    else:
-        return None
-
-    cleaned_text = text.strip().lower().replace('\n', ' ')
-    return hashlib.md5(cleaned_text.encode('utf-8')).hexdigest()
 
 def clean_text_for_hashing(text: str) -> str:
     # Remove emails
@@ -298,16 +256,45 @@ def get_text_hash(file_path: str) -> str:
     cleaned_text = clean_text_for_hashing(text)
     return hashlib.md5(cleaned_text.encode('utf-8')).hexdigest()
 
-def extract_text(file: UploadFile):
+def parse_experience_with_chatgpt(text: str) -> float:
+    prompt = f"""
+You are a resume parser. Extract only the total years of professional work experience from the following resume. Do not count internships or academic projects. If the resume mentions durations like "March 2020 - Present" or "3+ years experience in development", calculate the total accurately.
+
+Resume:
+{text}
+
+Return only the total years as a float (e.g., 2.5 or 4.0). If unclear, return 0.
+"""
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            temperature=0,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        result = response.choices[0].message.content.strip()
+        match = re.search(r'(\d+(\.\d+)?)', result)
+        if match:
+            return round(float(match.group(1)), 2)
+    except Exception:
+        pass
+    return 0.0
+
+def extract_text_from_path(path: str) -> str:
+    if path.lower().endswith(".pdf"):
+        return extract_text_from_pdf(path)
+    elif path.lower().endswith(".docx"):
+        return extract_text_from_docx(path)
+    return ""
+
+def extract_text(file: UploadFile) -> str:
     if file.filename.endswith(".pdf"):
         with pdfplumber.open(file.file) as pdf:
-            text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+            return "\n".join(page.extract_text() or "" for page in pdf.pages)
     elif file.filename.endswith(".docx"):
         doc = docx.Document(file.file)
-        text = "\n".join([para.text for para in doc.paragraphs])
+        return "\n".join([para.text for para in doc.paragraphs])
     else:
         raise ValueError("Only PDF and DOCX files are supported")
-    return text
 
 def extract_email(text):
     match = re.search(r'\b[\w.-]+?@\w+?\.\w+?\b', text)
@@ -337,6 +324,30 @@ def extract_skills(text):
     found = [skill for skill in skill_keywords if skill in text_lower]
     return list(set(found))
 
+def normalize_years(text: str) -> str:
+    return re.sub(r'(?:(?:\d\s*){4})', lambda m: ''.join(m.group(0).split()), text)
+
+# Utility: Extract text from PDF/DOCX
+def extract_text_from_path(filepath: str) -> str:
+    try:
+        if filepath.endswith(".pdf"):
+            # Try pdfplumber first
+            with pdfplumber.open(filepath) as pdf:
+                text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+            if len(text.strip()) > 300:
+                return text
+            # fallback to fitz
+            doc = fitz.open(filepath)
+            return "\n".join([page.get_text() for page in doc])
+        elif filepath.endswith(".docx"):
+            doc = docx.Document(filepath)
+            return "\n".join([p.text for p in doc.paragraphs])
+        else:
+            return ""
+    except:
+        return ""
+
+# Utility: Parse month-year to datetime
 def parse_date(month_str: str, year_str: str) -> Optional[datetime]:
     try:
         month = MONTHS_MAPPING.get(month_str[:3].lower(), '01')
@@ -349,17 +360,13 @@ def extract_experience(text: str) -> float:
     now = datetime.now()
     total_months = 0
     seen_ranges = set()
-
-    # Focus area: lines around job titles
     job_titles = ["engineer", "developer", "consultant", "intern", "analyst", "manager", "associate", "lead", "designer", "architect", "specialist", "executive"]
     lines = text.split('\n')
 
-    # Look for job titles and analyze nearby date mentions
     for idx, line in enumerate(lines):
         if any(title in line.lower() for title in job_titles):
-            context_window = " ".join(lines[max(0, idx-2):idx+5])
-            date_patterns = re.findall(r'([a-z]{3,9})[\s\-]*(\d{4})\s*(?:to|–|[-])\s*([a-z]{3,9}|present|current)[\s\-]*(\d{4})?', context_window, re.IGNORECASE)
-
+            context = " ".join(lines[max(0, idx - 2):idx + 5])
+            date_patterns = re.findall(r'([a-z]{3,9})[\s\-]*(\d{4})\s*(?:to|–|[-])\s*([a-z]{3,9}|present|current)[\s\-]*(\d{4})?', context, re.IGNORECASE)
             for sm, sy, em, ey in date_patterns:
                 try:
                     start_date = parse_date(sm, sy)
@@ -375,17 +382,70 @@ def extract_experience(text: str) -> float:
                 except:
                     continue
 
-    # Fallback pattern matching "3+ years", etc.
     textual_matches = re.findall(r'(\d+(?:\.\d+)?)\s*\+?\s*(?:years|yrs|year)\s*(?:of)?\s*(?:experience|exp)?', text)
     max_textual_years = max([float(y) for y in textual_matches if float(y) <= 50], default=0.0)
-    match_years = re.findall(r'(\d+(?:\.\d+)?)\s*\+?\s*(?:years|yrs)(?:\s+of\s+experience)?', text)
-
     inferred_years = round(total_months / 12, 2)
-
-    # Avoid double-counting: prefer the more conservative estimate
     if 0.5 <= inferred_years <= 50 and abs(inferred_years - max_textual_years) <= 2:
         return inferred_years
     return max(inferred_years, max_textual_years)
+
+# ============ GPT Scoring ============
+
+def gpt_relevance_score(resume_text: str, job_description: str) -> Optional[float]:
+    prompt = f"""
+You are a resume evaluator. Given the resume and the job description, rate how well the resume matches the job description on a scale from 0 to 100.
+
+Scoring Criteria:
+- Relevant experience and skills mentioned
+- Education or certifications matching the job
+- Alignment in roles, tools, technologies, and industry
+- Communication and structure quality of the resume
+
+Only respond with a single number between 0 and 100 — no words, no explanation, no symbols.
+
+Resume:
+\"\"\"{resume_text[:4000]}\"\"\"
+
+Job Description:
+\"\"\"{job_description[:2000]}\"\"\"
+"""
+
+    try:
+        client = openai.OpenAI()
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an expert recruiter evaluating resume-job fit scores."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        score_str = response.choices[0].message.content.strip()
+        match = re.search(r'\d{1,3}(?:\.\d+)?', score_str)
+        if match:
+            score = float(match.group())
+            return max(0.0, min(score, 100.0))  # Clamp between 0 and 100
+    except Exception as e:
+        print(f"Error: {e}")
+        return 0.0
+
+    return 0.0
+
+def calculate_experience_bonus(required: float, actual: float) -> float:
+    try:
+        required, actual = float(required), float(actual)
+    except:
+        return 0.0
+    if actual >= required:
+        return 1.0
+    elif required == 0:
+        return 0.0
+    return round(actual / required, 2)
+
+def get_combined_hash(file_path: str, job_description: str) -> str:
+    with open(file_path, "rb") as f:
+        content = f.read()
+    return hashlib.md5(content + job_description.encode()).hexdigest()
+
 
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):
@@ -440,55 +500,42 @@ def get_job_embedding(
 def match_resumes(
     job_description: str = Form(...),
     resume_folder_path: str = Form(...),
-    years_experience: str = Form("0")
+    required_experience: str = Form("0")
 ):
-    parsed_job_experience = extract_years(years_experience)
-
     if not os.path.exists(resume_folder_path):
         raise HTTPException(status_code=400, detail="Resume folder path does not exist.")
 
-    job_emb_tensor = model.encode(job_description, convert_to_tensor=True)
     results = []
 
     for filename in os.listdir(resume_folder_path):
         filepath = os.path.join(resume_folder_path, filename)
-        if not os.path.isfile(filepath):
+        if not os.path.isfile(filepath) or not filename.lower().endswith((".pdf", ".docx")):
             continue
 
-        if filename.lower().endswith(".pdf"):
-            text = extract_text_from_pdf(filepath)
-        elif filename.lower().endswith(".docx"):
-            text = extract_text_from_docx(filepath)
-        else:
-            continue
+        # Extract text
+        text = extract_text_from_path(filepath)
 
-        combined_hash = get_combined_hash(filepath, job_description)
+        # Extract actual experience
+        actual_exp = extract_experience(text)
 
-        resume_emb = model.encode(text, convert_to_tensor=True)
+        # Calculate bonus
+        exp_bonus = calculate_experience_bonus(required_experience, actual_exp)
 
-        semantic_score = util.pytorch_cos_sim(resume_emb, job_emb_tensor).item()
+        # Get GPT relevance score
+        relevance = gpt_relevance_score(text, job_description)
 
-        actual_experience_years = extract_experience(text)
-
-        experience_bonus = calculate_experience_bonus(parsed_job_experience, actual_experience_years)
-
-        relevance_score = (semantic_score * 0.8 + experience_bonus * 0.2) * 100
-
-        score = {
+        # Save
+        score_data = {
             "filename": filename,
-            "semantic_score": round(semantic_score, 4),
-            "actual_experience_years": round(actual_experience_years, 2),
-            "experience_bonus": round(experience_bonus, 2),
-            "relevance_score": round(relevance_score, 2)
+            "actual_experience_years": round(actual_exp, 2),
+            "experience_bonus": round(exp_bonus, 2),
+            "relevance_score": round(relevance or 0.0, 2)
         }
 
-        results.append(score)
-        processed_resumes[combined_hash] = score
-
-    with open(PROCESSED_CVS_FILE, "w") as f:
-        json.dump(processed_resumes, f, indent=4)
+        results.append(score_data)
 
     return results
+
 @app.post("/parse-resume")
 async def parse_resume(file: UploadFile = File(...)):
     try:
