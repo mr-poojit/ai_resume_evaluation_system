@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException, Form, UploadFile, File
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Form, UploadFile, File, Query, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer, util
 import google.generativeai as genai
@@ -7,8 +7,12 @@ from nameparser import HumanName
 from typing import List
 from docx import Document
 import io
+import urllib.parse
 import json
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
+from urllib.parse import quote
+import httpx
 import uvicorn
 import fitz
 import docx
@@ -22,7 +26,8 @@ from dateutil import parser
 import spacy
 import pdfplumber
 import docx
-import pytesseract
+import logging
+import requests
 from PIL import Image
 from typing import Dict, List, Optional
 
@@ -245,6 +250,8 @@ def clean_text_for_hashing(text: str) -> str:
     text = text.lower().strip().replace('\n', ' ')
     return text
 
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
+
 def get_text_hash(file_path: str) -> str:
     if file_path.lower().endswith(".pdf"):
         text = extract_text_from_pdf(file_path)
@@ -446,7 +453,6 @@ def get_combined_hash(file_path: str, job_description: str) -> str:
         content = f.read()
     return hashlib.md5(content + job_description.encode()).hexdigest()
 
-
 @app.post("/generate-jd")
 def generate_job_description(job_title: str = Form(...), skills: str = Form(...), experience: str = Form(...)):
     prompt = (
@@ -567,6 +573,6 @@ def find_duplicates(resume_folder_path: str = Form(...)):
     duplicates = {h: f for h, f in hash_map.items() if len(f) > 1}
 
     return {"duplicates": duplicates, "total_duplicates": len(duplicates)}
-    
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
