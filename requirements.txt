@@ -13,3 +13,10 @@ Spacy
 namparser
 openai>=1.0.0
 python-multipart
+sqlalchemy
+titoken
+numpy
+faiss
+SpeechRecognition
+pydub
+whisper

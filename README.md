@@ -1,43 +1,46 @@
-# 🧠 Resume Evaluation System (FastAPI + NLP + Hugging Face Integration)
+# 🧠 Resume Evaluation + AI Chatbot System (FastAPI + OpenAI + Whisper + FAISS)
 
-This project implements a smart job-candidate matching system using **semantic embeddings**, **resume parsing**, and **natural language processing (NLP)**. It provides RESTful APIs to:
-
-- Generate semantic embeddings from job descriptions.
-- Evaluate CVs based on semantic similarity and relevance.
-- Avoid reprocessing of previously analyzed resumes.
-- Reuse embeddings for duplicate job descriptions.
-- Generate professional job descriptions via Hugging Face API.
-- Extract key details from resumes: First Name, Middle Name, Last Name, Email, Mobile Number, Experience.
-- Finds the Duplicate Resumes using Hash-functions.(even if phone and email changes)
+This project implements an intelligent platform that combines **resume evaluation**, **AI-powered job description generation**, and an **OpenAI-based support chatbot** with **voice query capabilities**.
 
 ---
 
 ## 🚀 Features
 
-- 📄 Supports PDF and DOCX resume parsing.
-- 🧠 Semantic similarity scoring using Sentence Transformers.
-- 📊 Relevance scoring with experience weighting.
-- ✍️ Job description generation via Hugging Face models (e.g., Mixtral-8x7B).
-- 🔁 Embedding caching for duplicate jobs.
-- ⚡ FastAPI-powered RESTful backend.
-- 🔍 Extracts structured data from resumes (name, email, phone, experience).
+### 🔍 Resume Evaluation
+
+- 📄 Supports PDF and DOCX parsing
+- 🧠 Embedding-based matching with Sentence Transformers
+- 🎯 Relevance scoring with experience weighting
+- ♻️ Caches job/resume embeddings to avoid recomputation
+- 📤 Extracts: Name, Email, Phone, Experience
+- 🧬 Detects duplicate resumes (even if email/phone differ)
+
+### 🤖 Chatbot (Text + Voice)
+
+- Integrated chatbot powered by OpenAI (GPT-3.5)
+- Knowledge upload supported via text chunks
+- ❓ Users can ask questions related to uploaded product documents
+- 🗣 Voice-based querying using Whisper ASR
+- 🎯 Out-of-scope detection: Replies with fallback message
+- 📝 Manual problems can be inserted to FAQ from API
+- 🧾 All chatbot history stored in SQLite DB
+
+### 📝 JD Generation
+
+- `/generate-jd` API: Generate professional Job Descriptions from job title, skills, and experience
+- 🔄 Integrated with voice assistant (e.g. "generate JD for AI Engineer...")
 
 ---
 
-## 📆 Requirements
-
-- Python 3.8+
-- `virtualenv` or `venv` for isolated environment
-
-### 🔧 Install Dependencies
+## 📦 Requirements
 
 ```bash
-pip install -r requirements.txt
+Python >= 3.8
 ```
 
 ### 📄 `requirements.txt`
 
-```text
+```
 fastapi
 uvicorn
 sentence-transformers
@@ -48,232 +51,111 @@ dotenv
 requests
 google-generativeai
 transformers
-google-generativeai
 spacy
 nameparser
 openai>=1.0.0
+faiss-cpu
+pydub
+whisper
 python-multipart
 ```
 
 ---
 
-## ♻️ Setup Instructions
-
-### 1. 🔃 Clone the Repo
+## ⚙️ Setup
 
 ```bash
 git clone https://github.com/zorhrm/resumes_ai.git
-cd resume_ai
-```
+cd resume_evaluation_system
 
-### 2. 🐍 Create Virtual Environment
-
-#### Using `venv`:
-
-```bash
 python -m venv venv
-source venv/bin/activate   # On Windows: venv\Scripts\activate
-```
+source venv/bin/activate   # Or venv\Scripts\activate on Windows
 
-#### Using `virtualenv` (optional):
-
-```bash
-virtualenv venv
-source venv/bin/activate
-```
-
-### 3. 📆 Install Python Dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
+Create a `.env` file in root:
+
+```
+OPENAI_API_KEY=sk-...your_key...
+```
+
 ---
 
-## ⚙️ Running the Server
+## 🚀 Run the Server
 
 ```bash
-uvicorn main:app --reload
+uvicorn demo:app --reload
 ```
 
-- Server will run on `http://127.0.0.1:8000`
-- Swagger docs available at `http://127.0.0.1:8000/docs`
+- Swagger UI: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ---
 
-## 📡 API Endpoints
+## 🧪 API Endpoints
 
-### 1. `/job-embed` (POST)
+### ✅ Resume APIs
 
-**Description:** Generates semantic embedding for a job.
+- `POST /job-embed` — Create job embedding
+- `POST /match-resumes` — Match resumes to a job
+- `POST /generate-jd` — Generate JD from inputs
+- `POST /extract-resume-data` — Extract name, email, phone, exp
+- `POST /find-duplicate-resumes` — Detect duplicates
 
-#### 📅 Request (form-data):
+### 💬 Chatbot APIs
 
-| Field       | Type   | Description                   |
-| ----------- | ------ | ----------------------------- |
-| job_title   | string | Job title                     |
-| experience  | string | Experience requirement (text) |
-| skills      | string | Required skills               |
-| description | string | Full job description          |
-
-#### 📤 Response:
-
-```json
-{
-  "embedding": [...],
-  "job_hash": "hashed_id"
-}
-```
+- `POST /chatbot/upload-kb` — Upload plain text as knowledge
+- `POST /chatbot/add-problem` — Add a manual problem (FAQ)
+- `POST /chatbot/query` — Query the chatbot (text)
+- `POST /chatbot/voice-query` — Query chatbot using voice
 
 ---
 
-### 2. `/match-resumes` (POST)
+## 🧠 How Chatbot Works
 
-**Description:** Matches resumes against job description or job embedding.
-
-#### 📅 Request (form-data):
-
-| Field              | Type   | Description                                      |
-| ------------------ | ------ | ------------------------------------------------ |
-| job_description    | string | Full job description                             |
-| resume_folder_path | string | Path to local folder containing CVs              |
-| years_experience   | float  | Applicant's years of experience                  |
-| job_embedding      | string | (Optional) JSON-formatted list from `/job-embed` |
-
-#### 📤 Response:
-
-```json
-{
-  "results": [
-    {
-      "filename": "John_Doe.pdf",
-      "filepath": "resumes/John_Doe.pdf",
-      "semantic_score": 0.83,
-      "experience_bonus": 0.3,
-      "relevance_score": 71.0
-    }
-  ],
-  "total_resumes": 5
-}
-```
+1. Upload knowledge as plain text (split into chunks, vectorized using OpenAI embeddings)
+2. Voice query or text query comes in
+3. Matches the query vector with FAISS
+4. If it matches known problems, it responds based on retrieved context
+5. All interactions are stored in SQLite database
 
 ---
 
-### 3. `/generate-jd` (POST)
+## 🔁 Resetting Memory (Clear FAISS + Docs)
 
-**Description:** Generates a professional job description using Hugging Face model.
-
-#### 📅 Request (form-data):
-
-| Field      | Type   | Description            |
-| ---------- | ------ | ---------------------- |
-| job_title  | string | Job title              |
-| skills     | string | Comma-separated skills |
-| experience | string | Years of experience    |
-
-#### 📤 Response:
-
-```json
-{
-  "job_description": "- Software Engineer\n- Company Description: ...\n- Responsibilities:\n- ...\n- Requirements:\n- ...\n- Benefits:\n- ..."
-}
-```
-
----
-
-### 4. `/extract-resume-data` (POST)
-
-**Description:** Extracts structured information from a resume file.
-
-#### 📅 Request (form-data):
-
-| Field | Type | Description                 |
-| ----- | ---- | --------------------------- |
-| file  | file | Resume file (.pdf or .docx) |
-
-#### 📤 Response:
-
-```json
-{
-  "first_name": "John",
-  "middle_name": "Alan",
-  "last_name": "Doe",
-  "email": "john.doe@example.com",
-  "mobile": "+91-9123456780",
-  "experience": 5.2
-}
-```
-
----
-
-### 5. '/find-duplicate-resumes' (POST) 🆕
-
-Detects duplicate resumes from a folder, even if phone or email has changed.
-
-Request (form-data)
-
-| Field              | Type   | Description              |
-| ------------------ | ------ | ------------------------ |
-| resume_folder_path | string | Folder path with resumes |
-
-#### 📤 Response:
-
-```json
-{
-  "duplicates": [
-    ["resume1.pdf", "resume1_updated.pdf"],
-    ["resume2.docx", "resume2 (1).docx"]
-  ]
-}
-```
-
----
-
-## 🚀 Step 1: Get Your Gemini API Key
-
-- Go to: https://makersuite.google.com/app
-- Sign in with your Google account.
-- Click on your profile > "Get API key" or go directly to https://makersuite.google.com/app/apikey.
-- Copy the generated API key.
-- Store it securely. For example, in your .env file:
+To clear the uploaded knowledge base:
 
 ```bash
-GEMINI_API_KEY=your_api_key_here
+rm kb_index.faiss kb_docs.pkl   # On Windows use: del
 ```
 
-## 📁 Folder Structure
+You can now upload new KB via `/chatbot/upload-kb`.
+
+---
+
+## 💬 Voice JD Example
+
+> Upload MP3 file saying: “Generate JD for AI Engineer with 5 years experience in AWS, LangChain, and LLMs”
+
+Will return structured JD generated from OpenAI.
+
+---
+
+## 🗃 DB Tables
+
+- `chat_history` — Stores query and response
+- `manual_problems` — Stores manually added FAQs
+
+To inspect:
 
 ```bash
-├── demo.py                  # FastAPI application
-├── requirements.txt
-├── processed_cvs.json       # Auto-generated processed CV cache
-├── job_embeds.json          # Auto-generated job embedding cache
-├── resumes/                 # (Place your test resumes here)
-├── .env                     # Hugging Face API key
-└── README.md
+sqlite3 chatbot.db
+.tables
+SELECT * FROM chat_history;
 ```
 
 ---
 
-## 🧪 Testing Locally
+## 👨‍💻 Author
 
-1. Add some sample `.pdf` or `.docx` files to a `resumes/` folder.
-2. Use Postman or Swagger (`/docs`) to test endpoints.
-
----
-
-## 🔒 Notes
-
-- Resume data is hashed to avoid duplicate processing.
-- Job embeddings are cached via hash (MD5 of full job text).
-- Ensure resume files are readable and not encrypted.
-- Only certain Hugging Face models support `text-generation` APIs.
-- Use models like `gemini-1.5-flash-latest` for JD generation.
-
----
-
-## 📬 Contact
-
-Made with ❤️ by Poojit Jagadeesh Nagaloti
-
-> Feel free to contribute, suggest improvements, or open issues!
+Made with ❤️ by **Poojit Jagadeesh Nagaloti**

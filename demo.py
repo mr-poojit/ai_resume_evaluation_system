@@ -30,8 +30,13 @@ import logging
 import requests
 from PIL import Image
 from typing import Dict, List, Optional
+from models import Base, engine
 
 app = FastAPI()
+
+from chatbot_module import router as chatbot_router
+app.include_router(chatbot_router)
+Base.metadata.create_all(bind=engine)
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 nlp = spacy.load("en_core_web_trf")
@@ -576,3 +581,4 @@ def find_duplicates(resume_folder_path: str = Form(...)):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
+    
