@@ -547,6 +547,7 @@ def match_resumes(
 
     return results
 
+#parse resume
 @app.post("/parse-resume")
 async def parse_resume(file: UploadFile = File(...)):
     try:
@@ -556,6 +557,7 @@ async def parse_resume(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": str(e)}
 
+#find duplicates
 @app.post("/find-duplicate-resumes")
 def find_duplicates(resume_folder_path: str = Form(...)):
     if not os.path.exists(resume_folder_path):
